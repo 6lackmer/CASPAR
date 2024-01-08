@@ -1,0 +1,91 @@
+﻿@page
+@using Infrastructure.Models
+@model CASPAR.Pages.Tools.ReleaseTime.IndexModel
+@{
+	Layout = "_LayoutTools";
+	ViewData["Title"] = "Manage Release Time & Load Requirements";
+}
+
+<div class="flex flex-row justify-between mb-2">
+	<h3><strong>@Model?.Instructor?.ApplicationUser?.FirstName @Model?.Instructor?.ApplicationUser?.LastName:</strong> Release Time & Load Requirements</h3>
+</div>
+
+<form method="get">
+    <div class="flex justify-between items-center">
+        <h2>Semester Release Time</h2>
+        <div class="flex gap-2 items-center">
+			<input name="instructorId" type="hidden" value="@Model?.Instructor?.Id" />
+			<select name="semesterSearchId" class="select select-bordered w-full max-w-md">
+				@foreach (var semester in Model?.Semesters ?? new List<SemesterInstance>())
+                {
+					if (semester.Id == Model?.Semester.Id)
+					{
+						<option asp-page-handler="SetSemester" asp-route-id="@semester.Id" value="@semester.Id" selected>@semester.Name</option>
+					}
+					else
+					{
+						<option asp-page-handler="SetSemester" asp-route-id="@semester.Id" value="@semester.Id">@semester.Name</option>
+
+					}
+                }
+            </select>
+            <button type="submit" asp-page="Index" class="w-100 btn btn-md btn-primary">View Data</button>
+        </div>
+    </div>
+	@* <a asp-page="Index" asp-route-instructorId="@Model?.LoadRequirement.InstructorId" class="w-100 btn">Back</a> *@
+
+</form>
+<hr class="my-8" />
+
+<form method="post">
+	<input asp-for="Instructor.Id" type="hidden" />
+	<input asp-for="Semester.Id" type="hidden" />
+
+	<div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
+		<div class="mb-5">
+			<h2>Load Hours Requirement</h2>
+			<br />
+			<div class="form-group">
+				<label asp-for="LoadRequirement.LoadReqHours"></label>
+				<input asp-for="LoadRequirement.LoadReqHours" />
+				<span asp-validation-for="LoadRequirement.LoadReqHours" class="text-sm text-red-600"></span>
+			</div>
+			<div>
+				<input asp-for="LoadRequirement.SemesterInstanceId" type="hidden" />
+				<input asp-for="LoadRequirement.InstructorId" type="hidden" />
+				<input asp-for="LoadRequirement.Id" type="hidden" />
+			</div>
+		</div>
+
+		<div class="mb-5">
+			<h2>Release Time Allotment</h2>
+			<br />
+			@for (int i = 0; i < Model?.ReleaseTimes.Count(); i++)
+			{
+				<input name="ReleaseTimes[@(i)].Id" type="hidden" value="@Model.ReleaseTimes.ElementAt(i).Id" />
+				<input name="ReleaseTimes[@(i)].InstructorId" type="hidden" value="@Model.Instructor.Id" />
+				<input name="ReleaseTimes[@(i)].SemesterInstanceId" type="hidden" value="@Model.Semester.Id" />
+
+				<div class="form-group">
+					<label>Release Time Hours</label>
+					<input name="ReleaseTimes[@(i)].ReleaseTimeAmount" value="@Model.ReleaseTimes.ElementAt(i).ReleaseTimeAmount" />
+				</div>
+
+				<div class="form-group">
+					<label>Release Time Notes</label>
+					<textarea name="ReleaseTimes[@(i)].ReleaseTimeNotes">@Model.ReleaseTimes.ElementAt(i).ReleaseTimeNotes</textarea>
+				</div>
+
+				<div class="flex gap-2 mt-2 mb-8">
+					<button type="submit" class="w-100 btn btn btn-error" asp-page-handler="RemoveReleaseTime" asp-route-id="@Model.ReleaseTimes.ElementAt(i).Id">Remove</button>
+				</div>
+			}
+			<button type="submit" class="w-100 btn btn-primary" asp-page-handler="AddReleaseTime">Add Release Time</button>
+		</div>
+	</div>
+
+	<div class="form-actions">
+		<a asp-area="" asp-page="/Tools/ManageInstructors/Index" class="btn">Cancel</a>
+		<button type="submit" class="btn btn-success icon-check" asp-page-handler="SaveChanges">Save</button>
+	</div>
+</form>

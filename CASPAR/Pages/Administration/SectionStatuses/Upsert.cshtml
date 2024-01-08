@@ -1,0 +1,37 @@
+﻿@page
+@model CASPAR.Pages.Admin.SectionStatuses.UpsertModel
+@{
+    Layout = "_LayoutAdministration";
+    ViewData["Title"] = $"{(Model.SectionStatus.Id == 0 ? "Add" : "Edit")} Section Status";
+}
+
+<h1>@(Model.SectionStatus.Id == 0 ? "Add" : "Edit") Section Status</h1>
+
+<form method="post" class="form">
+    <fieldset class="form-fields">
+        <div class="form-group">
+            <label asp-for="SectionStatus.SectionStatusName"></label>
+            <input asp-for="SectionStatus.SectionStatusName" />
+            <span asp-validation-for="SectionStatus.SectionStatusName" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label class="ms-2">Color Assignment</label>
+            @Html.DropDownListFor(t =>
+            t.SectionStatus.SectionStatusColor,
+            Model.Colors,
+            "",
+            new { @class = "" }
+            )
+            <span asp-validation-for="SectionStatus.SectionStatusColor" class="text-sm text-red-600"></span>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        @if (Model.SectionStatus.Id != 0)
+        {
+            <input asp-for="SectionStatus.Id" type="hidden" />
+        }
+        <a asp-area="" asp-page="Index" class="btn">Cancel</a>
+        <button type="submit" class="btn btn-success icon-check">Save</button>
+    </div>
+</form>

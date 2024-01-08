@@ -1,0 +1,88 @@
+﻿@page
+@model RegisterModel
+@using Utility
+@using Microsoft.AspNetCore.Identity
+@using Infrastructure.Models
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<div class="hero">
+    <div class="max-w-6xl mt-8 mb-16 px-16 pt-14 pb-10 bg-neutral-100 rounded-lg">
+        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+            <h1 class="mb-6">
+                @if (User.IsInRole(SD.AdminRole))
+                {
+                    <strong>Register a User</strong>
+                }
+                else
+                {
+                    <strong>Sign Up</strong>
+                }
+            </h1>
+
+            <div asp-validation-summary="ModelOnly" class="text-center text-red-600"></div>
+
+            <div class="grid grid-cols-2 divide-x mb-4">
+                <div class="pr-4">
+                    <div class="form-group">
+                        <label asp-for="Input.Email"></label>
+                        <input asp-for="Input.Email" />
+                        <span asp-validation-for="Input.Email" class="text-sm text-red-600"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Input.Password"></label>
+                        <input asp-for="Input.Password" />
+                        <span asp-validation-for="Input.Password" class="text-sm text-red-600"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Input.ConfirmPassword"></label>
+                        <input asp-for="Input.ConfirmPassword" />
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-sm text-red-600"></span>
+                    </div>
+                </div>
+                <div class="pl-4">
+                    <div class="form-group">
+                        <label asp-for="Input.FirstName"></label>
+                        <input asp-for="Input.FirstName" />
+                        <span asp-validation-for="Input.FirstName" class="text-sm text-red-600"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Input.LastName"></label>
+                        <input asp-for="Input.LastName" />
+                        <span asp-validation-for="Input.LastName" class="text-sm text-red-600"></span>
+                    </div>
+                    @if (User.IsInRole(SD.AdminRole))
+                    {
+                        <div class="form-group">
+                            <div class="flex flex-row gap-3 justify-between">
+                                <input class="radio" type="radio" name="rdUserRole" value="@SD.StudentRole" /> @SD.StudentRole
+                                <input class="radio" type="radio" name="rdUserRole" value="@SD.InstructorRole" /> @SD.InstructorRole
+                                <input class="radio" type="radio" name="rdUserRole" value="@SD.SecretaryRole" /> @SD.SecretaryRole
+                                <input class="radio" type="radio" name="rdUserRole" value="@SD.ProgramCoordinatorRole" /> @SD.ProgramCoordinatorRole
+                            </div>
+                            <div class="flex flex-row gap-3 justify-between">
+                                <input class="radio" type="radio" name="rdUserRole" value="@SD.AdminRole" /> @SD.AdminRole
+                                <input class="radio" type="radio" name="rdUserRole" value="@SD.GraduateCoordinatorRole" /> @SD.GraduateCoordinatorRole
+                                <input class="radio" type="radio" name="rdUserRole" value="@SD.FlexCoordinatorRole" /> @SD.FlexCoordinatorRole
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="text-right">
+                <a class="btn btn-secondary" asp-area="" asp-page="/Index">Cancel</a>
+                <button id="login-submit" class="btn btn-primary" type="submit">Register</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

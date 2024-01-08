@@ -1,0 +1,38 @@
+﻿@page
+@model CASPAR.Pages.Tools.ManageInstructors.IndexModel
+@{
+    Layout = "_LayoutTools";
+    ViewData["Title"] = "Manage Instructors";
+}
+
+<div class="flex flex-row justify-between mb-2">
+    <h1>Manage Instructors</h1>
+</div>
+
+<table id="dataTable">
+    <thead>
+        <tr>
+            <th style="width: 30%">Instructor Name</th>
+            <th style="width: 30%">Program Affiliation</th>
+            <th style="width: 40%">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var instructor in Model.Instructors)
+        {
+            <tr>
+                <td>@instructor.ApplicationUser.FirstName @instructor.ApplicationUser.LastName</td>
+                <td>
+                    @foreach (var program in instructor?.ProgramAffiliation)
+                    {
+                        <div class="badge badge-outline">@program?.ProgramCode</div>
+                    }
+                </td>
+                <td>
+                    <a class="btn btn-sm btn-success icon-edit" asp-area="" asp-page="Update" asp-route-id="@instructor.UserId">Edit Details</a>
+                    <a class="btn btn-sm btn-error icon-plus" asp-area="" asp-page="../ReleaseTime/Index" asp-route-instructorId="@instructor.Id">Load & Release Time Info</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

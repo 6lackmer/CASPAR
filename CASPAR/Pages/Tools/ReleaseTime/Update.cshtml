@@ -1,0 +1,62 @@
+﻿@page
+@model CASPAR.Pages.Tools.ReleaseTime.UpsertModel
+@{
+	Layout = "_LayoutTools";
+	ViewData["Title"] = "Edit Time Info";
+}
+
+<div class="mb-5">
+	<h2>Edit Time Info For:</h2>
+	<h3>&nbsp;@Model.Instructor.ApplicationUser.FirstName @Model.Instructor.ApplicationUser.LastName</h3>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-8">
+	<div class="mb-5">
+		<h2>Load Hours Requirement</h2>
+		<br />
+		<form method="post" asp-page-handler="ChangeLoadHours">
+			<div class="form-group">
+				<label asp-for="LoadRequirement.LoadReqHours"></label>
+				<input asp-for="LoadRequirement.LoadReqHours" />
+				<span asp-validation-for="LoadRequirement.LoadReqHours" class="text-sm text-red-600"></span>
+			</div>
+			<div>
+				<input asp-for="LoadRequirement.SemesterInstanceId" type="hidden" />
+				<input asp-for="LoadRequirement.InstructorId" type="hidden" />
+				<input asp-for="LoadRequirement.Id" type="hidden" />
+				<button type="submit" class="w-100 btn btn-primary">Update Load Hours</button>
+				<a asp-page="Index" asp-route-instructorId="@Model.LoadRequirement.InstructorId" class="w-100 btn">Exit</a>
+			</div>
+		</form>
+	</div>
+
+	<div class="mb-5">
+		<h2>Release Time Allotment</h2>
+		<br />
+		<form method="post" asp-page-handler="ChangeReleaseTime">
+			<div class="form-group">
+				<label asp-for="ReleaseTime.ReleaseTimeAmount"></label>
+				<input asp-for="ReleaseTime.ReleaseTimeAmount" />
+				<span asp-validation-for="ReleaseTime.ReleaseTimeAmount" class="text-sm text-red-600"></span>
+			</div>
+
+			<div class="form-group">
+				<label asp-for="ReleaseTime.ReleaseTimeNotes"></label>
+				<textarea asp-for="ReleaseTime.ReleaseTimeNotes"></textarea>
+				<span asp-validation-for="ReleaseTime.ReleaseTimeNotes" class="text-sm text-red-600"></span>
+			</div>
+
+			<div class="flex gap-2 my-8">
+				<input asp-for="ReleaseTime.SemesterInstanceId" type="hidden" />
+				<input asp-for="ReleaseTime.InstructorId" type="hidden" />
+				<input asp-for="ReleaseTime.Id" type="hidden" />
+				<input asp-for="LoadRequirement.LoadReqHours" type="hidden" />
+				<button type="submit" class="w-100 btn btn btn-primary">Update Release Time</button>
+				<a asp-page="Index" asp-route-instructorId="@Model.ReleaseTime.InstructorId" class="w-100 btn">Exit</a>
+			</div>
+		</form>
+	</div>
+</div>
+
+
+

@@ -1,0 +1,48 @@
+﻿@page
+@model CASPAR.Pages.Student.Profile.UpdateModel
+@{
+	ViewData["Title"] = "Update My Profile";
+}
+
+<h1>Update My Profile</h1>
+
+<form method="post" class="form">
+	<fieldset class="form-fields">
+		<div class="form-group">
+			<label asp-for="Student.User.FirstName"></label>
+			<input asp-for="Student.User.FirstName" />
+			<span asp-validation-for="Student.User.FirstName" class="text-sm text-red-600"></span>
+		</div>
+		<div class="form-group">
+			<label class="ms-2" asp-for="Student.Major.MajorName"></label>
+			@Html.DropDownListFor(t =>
+			t.Student.MajorId,
+			Model.Majors,
+			"",
+			new { @class = "" }
+			)
+			<span asp-validation-for="Student.MajorId" class="text-sm text-red-600"></span>
+		</div>
+		<div class="form-group">
+			<label asp-for="Student.User.LastName"></label>
+			<input asp-for="Student.User.LastName" />
+			<span asp-validation-for="Student.User.LastName" class="text-sm text-red-600"></span>
+		</div>
+		<div class="form-group">
+			<label asp-for="Student.GraduationYear"></label>
+			<input asp-for="Student.GraduationYear" />
+			<span asp-validation-for="Student.GraduationYear" class="text-sm text-red-600"></span>
+		</div>
+		<div class="form-group">
+			<label asp-for="Student.User.Email"></label>
+			<input disabled asp-for="Student.User.Email" />
+		</div>
+	</fieldset>
+
+	<div class="form-actions">
+		<input asp-for="Student.Id" type="hidden" />
+		<input asp-for="Student.UserId" type="hidden" />
+		<a asp-area="" asp-page="Index" class="btn">Cancel</a>
+		<button type="submit" class="btn btn-success icon-check">Update</button>
+	</div>
+</form>

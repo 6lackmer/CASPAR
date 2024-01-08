@@ -1,0 +1,69 @@
+﻿@page
+@model CASPAR.Pages.Instructor.Profile.UpdateModel
+@{
+    ViewData["Title"] = "Update My Profile";
+}
+
+<h1>Update My Profile</h1>
+
+<form method="post" class="form">
+    <fieldset class="form-fields">
+        <div class="form-group">
+            <label asp-for="Instructor.ApplicationUser.FirstName"></label>
+            <input asp-for="Instructor.ApplicationUser.FirstName" />
+            <span asp-validation-for="Instructor.ApplicationUser.FirstName" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Instructor.InstructorTitle"></label>
+            <input asp-for="Instructor.InstructorTitle" />
+            <span asp-validation-for="Instructor.InstructorTitle" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Instructor.ApplicationUser.LastName"></label>
+            <input asp-for="Instructor.ApplicationUser.LastName" />
+            <span asp-validation-for="Instructor.ApplicationUser.LastName" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Instructor.ApplicationUser.Email"></label>
+            <input disabled asp-for="Instructor.ApplicationUser.Email" />
+        </div>
+        <div class="items-end">
+            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                <div class="mb-5">
+                    <label>Program Affiliation</label>
+                    @foreach (var program in Model.ProgramList)
+                    {
+                        if (Model.Instructor.ProgramAffiliation != null && Model.Instructor.ProgramAffiliation.Contains(program))
+                        {
+                            <div class="form-control max-w-md">
+                                <label class="label cursor-pointer">
+                                    <span class="label-text">@program.ProgramName</span>
+                                    @* @Html.CheckBox(Model.Course.Modalities, new { value = modality.Value, class = "checkbox" }) *@
+                                    <input type="checkbox" name="Programs" value="@program.Id" class="checkbox" checked />
+                                </label>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-control max-w-md">
+                                <label class="label cursor-pointer">
+                                    <span class="label-text">@program.ProgramName</span>
+                                    @* @Html.CheckBox(Model.Course.Modalities, new { value = modality.Value, class = "checkbox" }) *@
+                                    <input type="checkbox" name="Programs" class="checkbox" value="@program.Id" />
+                                </label>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        <input asp-for="Instructor.IsDisabled" type="hidden" />
+        <input asp-for="Instructor.Id" type="hidden" />
+        <input asp-for="Instructor.UserId" type="hidden" />
+        <a asp-area="" asp-page="Index" class="btn">Cancel</a>
+        <button type="submit" class="btn btn-success icon-check">Update</button>
+    </div>
+</form>

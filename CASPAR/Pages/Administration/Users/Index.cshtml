@@ -1,0 +1,76 @@
+﻿@page
+@model CASPAR.Pages.Administration.Users.IndexModel
+@{
+    Layout = "_LayoutAdministration";
+    ViewData["Title"] = "Manage Users";
+}
+
+
+<div class="flex flex-row justify-between mb-2">
+    <h1>Manage Users</h1>
+    <a class="btn btn-primary" asp-page="/Account/Register" asp-area="Identity">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+            <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+        </svg>
+        Add User
+    </a>
+</div>
+
+<table id="dataTable">
+    <thead>
+        <tr>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Role(s)</th>
+            <th>Lock/Unlock</th>
+            <th class="w-64">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.ApplicationUsers)
+        {
+            <tr>
+                <td>@user.FirstName @user.LastName</td>
+                <td>@user.Email</td>
+                <td>
+                    @{
+                        if (Model.UserRoles[user.Id].Count() == 1)
+                        {
+                            @Model.UserRoles[user.Id].First()
+                        }
+                        else
+                        {
+                            <ul>
+                                @{
+                                    foreach (var r in Model.UserRoles[user.Id])
+                                    {
+                                        <li>
+                                            @r
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        }
+                    }
+                </td>
+                <td>
+                    <form method="post">
+                        @{
+                            if (user.LockoutEnd > DateTime.Now)
+                            {
+                                <button type="submit" class="btn btn-sm btn-success" asp-page-handler="lockUnlock" asp-route-id="@user.Id">Unlock</button>
+                            }
+                            else
+                            {
+                                <button type="submit" class="btn btn-sm btn-warning" asp-page-handler="lockUnlock" asp-route-id="@user.Id">Lock</button>
+                            }
+                        }
+                    </form>
+                </td>
+                <td>
+                    <a class="btn btn-sm btn-primary" asp-page="Update" asp-route-id="@user.Id">Edit</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

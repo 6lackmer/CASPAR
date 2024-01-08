@@ -1,0 +1,117 @@
+﻿@using CASPAR.ViewModels;
+@using DataAccess;
+@using Infrastructure.Interfaces;
+@using Infrastructure.Models;
+@using Microsoft.EntityFrameworkCore;
+
+@namespace CASPAR.Pages.Schedule.Builder
+
+@foreach (var instructorCourse in InstructorSchedules)
+{
+    <div id="instructor@(instructorCourse.InstructorId)" class="scroll-mt-24 rounded-xl
+        @(instructorCourse.Credits + instructorCourse.ReleaseTime > 20 ? "text-red-600 hover:text-red-700" : "hover:text-neutral-900") 
+        @(SelectedInstructorId == instructorCourse.InstructorId ? "bg-neutral-300/75" : "") hover:bg-neutral-300 px-1 py-2"
+    >
+        <button class="w-full" type="button" @onclick="@(e => OnSelectInstructor.InvokeAsync(instructorCourse.InstructorId))">
+            <div class="instructor-load text-left">
+            <div>
+                @if (SelectedInstructorId == instructorCourse.InstructorId)
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                    </svg>
+                }
+                else
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                        <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                    </svg>
+                }
+            </div>
+            <div class="flex flex-row gap-2">
+                <span class="@(SelectedInstructorId == instructorCourse.InstructorId ? "font-bold" : "")">
+                    @instructorCourse.Instructor?.ApplicationUser?.FirstName @instructorCourse.Instructor?.ApplicationUser?.LastName
+                </span>
+            </div>
+            <div class="relative flex items-center rounded-full overflow-hidden">
+                <div class="absolute w-full text-center text-xs text-neutral-50">
+                    @if (instructorCourse.Load > 0)
+                    {
+                        <text>@(instructorCourse.Credits + instructorCourse.ReleaseTime)/@instructorCourse.Load</text>
+                    }
+                    else
+                    {
+                        <text>@(instructorCourse.Credits + instructorCourse.ReleaseTime)</text>
+                    }
+                </div>
+                @if (instructorCourse.Load > 0)
+                {
+                    if (instructorCourse.Credits + instructorCourse.ReleaseTime > instructorCourse.Load)
+                    {
+                        <div class="w-full bg-purple-600">
+                            <div class="@(instructorCourse.Credits + instructorCourse.ReleaseTime > 20 ? "bg-red-600" : "bg-amber-600") font-medium text-neutral-100 text-center h-full"
+                                    style="width: @(100 * (instructorCourse.Credits + instructorCourse.ReleaseTime - instructorCourse.Load) / instructorCourse.Load)%">
+                                &nbsp;
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="w-full bg-neutral-700">
+                            <div class="bg-purple-600 font-medium text-neutral-100 text-center h-full"
+                                    style="width: @(100 * (instructorCourse.Credits + instructorCourse.ReleaseTime) / instructorCourse.Load)%">
+                                &nbsp;
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="w-full bg-neutral-700">
+                        <div class="@(instructorCourse.Credits + instructorCourse.ReleaseTime > 20 ? "bg-red-600" : "bg-amber-600") font-medium text-neutral-100 text-center h-full"
+                                style="width: 100%">
+                            &nbsp;
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="@(instructorCourse.Credits + instructorCourse.ReleaseTime > 20 ? "text-red-600" : "text-green-600")">
+                @if (instructorCourse.Credits + instructorCourse.ReleaseTime > 20) //instructors cannot teach over 20 credit hours
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                            class="w-5 h-5">
+                        <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                    </svg>
+                }
+                else if (instructorCourse.Credits + instructorCourse.ReleaseTime >= instructorCourse.Load) // instructor has hit load or overload
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                            class="w-5 h-5">
+                        <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                    </svg>
+                }
+            </div>
+        </div>
+        </button>
+        @if (SelectedInstructorId == instructorCourse.InstructorId)
+        {
+            <InstructorCourseList Sections="instructorCourse.Sections" ReleaseTimes="instructorCourse.ReleaseTimes" OnSelectCourse="OnSelectCourse" />
+        }
+    </div> 
+}
+
+@code {
+
+    [Parameter]
+    public int? SelectedInstructorId { get; set; }
+
+    [Parameter]
+    public IEnumerable<InstructorSchedules> InstructorSchedules { get; set; } = new List<InstructorSchedules>();
+
+    [Parameter]
+    public EventCallback<int?> OnSelectInstructor { get; set; }
+
+    [Parameter]
+    public EventCallback<int?> OnSelectCourse { get; set; }
+
+}

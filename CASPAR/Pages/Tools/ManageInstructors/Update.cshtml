@@ -1,0 +1,61 @@
+﻿@page
+@model CASPAR.Pages.Tools.ManageInstructors.UpsertModel
+@{
+    Layout = "_LayoutTools";
+    ViewData["Title"] = "Edit Instructor Info";
+}
+
+<h2 class="mb-5">Edit Instructor Program Affiliations</h2>
+
+<form method="post">
+    <fieldset class="form-fields">
+        <div class="form-group">
+            <div class="form-group">
+                <h2 class="h2">Instructor Name</h2>
+                <h4>@Model.Instructor.ApplicationUser.FirstName @Model.Instructor.ApplicationUser.LastName</h4>
+            </div>
+            <div class="form-group">
+                <label asp-for="Instructor.InstructorTitle"></label>
+                <input asp-for="Instructor.InstructorTitle" />
+                <span asp-validation-for="Instructor.InstructorTitle" class="text-sm text-red-600"></span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+            <div class="mb-5">
+                <h2 class="h2">Program</h2>
+                @foreach (var program in Model.ProgramList)
+                {
+                    if (Model.Instructor.ProgramAffiliation != null && Model.Instructor.ProgramAffiliation.Contains(program))
+                    {
+                        <div class="form-control max-w-md">
+                            <label class="label cursor-pointer">
+                                <span class="label-text">@program.ProgramName</span>
+                                @* @Html.CheckBox(Model.Course.Modalities, new { value = modality.Value, class = "checkbox" }) *@
+                                <input type="checkbox" name="Programs" value="@program.Id" class="checkbox" checked />
+                            </label>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-control max-w-md">
+                            <label class="label cursor-pointer">
+                                <span class="label-text">@program.ProgramName</span>
+                                @* @Html.CheckBox(Model.Course.Modalities, new { value = modality.Value, class = "checkbox" }) *@
+                                <input type="checkbox" name="Programs" class="checkbox" value="@program.Id" />
+                            </label>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+    </fieldset>
+    <div class="flex gap-2 my-8">
+
+        <input asp-for="Instructor.Id" type="hidden" />
+        <input asp-for="Instructor.UserId" type="hidden" />
+        <a asp-page="Index" class="w-100 btn btn-lg btn-outline">Cancel</a>
+        <button type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
+    </div>
+</form>

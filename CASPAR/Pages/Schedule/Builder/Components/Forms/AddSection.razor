@@ -1,0 +1,56 @@
+﻿@using DataAccess;
+@using Infrastructure.Models;
+@using Microsoft.EntityFrameworkCore;
+
+@namespace CASPAR.Pages.Schedule.Builder
+
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+
+<EditForm Model="this" OnSubmit="@AddSectionAsync">
+    <div class="flex justify-end p-3">
+        <button type="submit" class="btn btn-sm btn-primary place-self-end" disabled="@Loading">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+            </svg>
+            Add Section
+        </button>
+    </div>
+</EditForm>
+
+@code {
+
+    [CascadingParameter(Name = "SemesterInstanceId")]
+    public int SemesterInstanceId { get; set; }
+
+    [Parameter]
+    public int? CourseId { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnSectionAddedCallback { get; set; }
+
+    public bool Loading { get; set; }
+
+    private async Task AddSectionAsync()
+    {
+        if (CourseId != null)
+        {
+            Loading = true;
+
+            using var context = DbFactory.CreateDbContext();
+
+            var section = new Section
+                {
+                    SemesterInstanceId = SemesterInstanceId,
+                    CourseId = (int)CourseId,
+                    SectionStatusId = 1,
+                };
+            await context.Sections.AddAsync(section);
+            await context.SaveChangesAsync();
+
+            Loading = false;
+
+            await OnSectionAddedCallback.InvokeAsync(section.Id);
+        }
+    }
+
+}

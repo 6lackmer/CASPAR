@@ -1,0 +1,54 @@
+﻿@page
+@model CASPAR.Pages.Admin.SectionStatuses.IndexModel
+@{
+    Layout = "_LayoutAdministration";
+    ViewData["Title"] = "Manage Section Statuses";
+}
+
+<div class="flex flex-row justify-between mb-2">
+    <h1>@ViewData["Title"]</h1>
+    <a class="btn btn-primary" asp-area="" asp-page="Upsert">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+            <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+        </svg>
+        New Section Status
+    </a>
+</div>
+
+<table id="dataTable">
+    <thead>
+        <tr>
+            <th>Section Status</th>
+            <th>Color</th>
+            <th class="w-64">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var status in Model.SectionStatuses)
+        {
+            <tr>
+                <td>@status.SectionStatusName</td>
+                <td>
+                    <span class="text-xs text-@(status.SectionStatusColor)-500 bg-@(status.SectionStatusColor)-100 border border-@(status.SectionStatusColor)-200 rounded-full px-2 py-1">
+                        @(status.SectionStatusColor?.Substring(0, 1).ToUpper() + status.SectionStatusColor?.Substring(1))
+                    </span>
+                </td>
+                <td>
+                    <form method="post">
+                        @{
+                            if (status.IsDisabled)
+                            {
+                                <button type="submit" class="btn btn-sm btn-error icon-check" asp-page-handler="lockUnlock" asp-route-id="@status.Id"> Enable</button>
+                            }
+                            else
+                            {
+                                <a class="btn btn-sm btn-success icon-edit" asp-area="" asp-page="Upsert" asp-route-id="@status.Id">Edit</a>
+                                <button type="submit" class="btn btn-sm btn-error icon-delete" asp-page-handler="lockUnlock" asp-route-id="@status.Id"> Disable</button>
+                            }
+                        }
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

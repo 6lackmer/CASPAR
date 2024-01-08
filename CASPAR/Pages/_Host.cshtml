@@ -1,0 +1,34 @@
+﻿@page "/Blazor"
+
+@using Microsoft.AspNetCore.Components.Web
+@using CASPAR.Pages.Schedule
+@using CASPAR.Pages.Tools
+
+@namespace CASPAR.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    Layout = "_LayoutFullWidth";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="/" />
+</head>
+<body>
+    <component type="typeof(App)" render-mode="Server" />
+
+    <script src="_framework/blazor.server.js"></script>
+    <script type="text/javascript">
+        function scrollToElementId(elementId) {
+            var element = document.getElementById(elementId);
+
+            element.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+﻿@page
+@model CASPAR.Pages.Instructor.Wishlist.UpsertModel
+@{
+    ViewData["Title"] = $"{(Model.Course.Id == 0 ? "Add" : "Edit")} Course";
+}
+
+<h2 class="mb-5">@(Model.Course.Id == 0 ? "Add New" : "Edit")  Course Preference</h2>
+
+<form method="post">
+    <div>
+        @if (Model.Course.CourseId != 0)
+        {
+            <h2>Chosen Course</h2>
+            <h3 class="font-bold">@Model?.Course?.Course?.Program?.ProgramCode @Model?.Course?.Course?.CourseNumber (@Model?.Course?.Course?.CreditHours)</h3>
+        }
+        else
+        {
+            <label>Choose Course</label>
+            <div>
+            @Html.DropDownListFor(m =>
+            m.Course.CourseId,
+            Model.CourseList,
+            " - Please select a course - ",
+            new { @class = "", @id = "ddlCourse" }
+            )
+            </div>
+            <span class="text-danger" asp-validation-for="Course.CourseId"></span>
+        }
+    </div>
+
+    <p>Help us understand when and how you'd like to teach this course.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div class="mb-5">
+            <h2 class="h2">Modality</h2>
+            @foreach (var modality in Model.ModalityList)
+            {
+                if (Model.Course.Modalities != null && Model.Course.Modalities.Contains(modality))
+                {
+                    <div class="form-control max-w-md">
+                        <label class="label cursor-pointer">
+                            <span class="label-text">@modality.ModalityName</span>
+                            @* @Html.CheckBox(Model.Course.Modalities, new { value = modality.Value, class = "checkbox" }) *@
+                            <input type="checkbox" data-has-campuses="@modality.HasCampuses" data-has-timeBlocks="@modality.HasTimeBlocks" name="Modalities" value="@modality.Id" class="checkbox modality-checkbox" checked />
+                        </label>
+                    </div>
+                }
+                else
+                {
+                    <div class="form-control max-w-md">
+                        <label class="label cursor-pointer">
+                            <span class="label-text">@modality.ModalityName</span>
+                            @* @Html.CheckBox(Model.Course.Modalities, new { value = modality.Value, class = "checkbox" }) *@
+                            <input type="checkbox" data-has-campuses="@modality.HasCampuses" data-has-timeBlocks="@modality.HasTimeBlocks" name="Modalities" value="@modality.Id" class="checkbox modality-checkbox" />
+                        </label>
+                    </div>
+                }
+            }
+        </div>
+
+        <div id="campusDiv" class="invisible mb-5">
+            <h2 class="h2">Campus</h2>
+            @foreach (var campus in Model.CampusList)
+            {
+                if (Model.Course.Campuses != null && Model.Course.Campuses.Contains(campus))
+                {
+                    <div class="form-control max-w-md">
+                        <label class="label cursor-pointer">
+                            <span class="label-text">@campus.CampusName</span>
+                            <input type="checkbox" name="Campuses" value="@campus.Id" class="checkbox" checked />
+                        </label>
+                    </div>
+                }
+                else
+                {
+                    <div class="form-control max-w-md">
+                        <label class="label cursor-pointer">
+                            <span class="label-text">@campus.CampusName</span>
+                            <input type="checkbox" name="Campuses" value="@campus.Id" class="checkbox" />
+                        </label>
+                    </div>
+                }
+            }
+        </div>
+        <div id="daysDiv" class="invisible mb-5">
+            <h2 class="h2">Days of the Week</h2>
+            <div class="grid grid-cols-5 justify-between gap-x-1">
+                @for (int i = 0; i < Model.DaysOfWeek.Length; i++)
+                {
+                    <label class="flex flex-col font-bold">
+                        @Model.DaysOfWeek[i].Text
+                        @Html.HiddenFor(m => m.DaysOfWeek[i].Value)
+                        @Html.CheckBoxFor(m => m.DaysOfWeek[i].Checked, new { Class = "checkbox" })
+                    </label>
+                }
+            </div>
+        </div>
+        <div id="timeDiv" class="invisible mb-5">
+            <h2 class="h2">Time</h2>
+            @foreach (var time in Model.TimeBlockList)
+            {
+                if (Model.Course.TimeBlocks != null && Model.Course.TimeBlocks.Contains(time))
+                {
+                    <div class="form-control max-w-md">
+                        <label class="label cursor-pointer">
+                            <span class="label-text">@time.TimeBlockName</span>
+                            <input type="checkbox" name="Times" value="@time.Id" class="checkbox" checked />
+                        </label>
+                    </div>
+                }
+                else
+                {
+                    <div class="form-control max-w-md">
+                        <label class="label cursor-pointer">
+                            <span class="label-text">@time.TimeBlockName</span>
+                            <input type="checkbox" name="Times" value="@time.Id" class="checkbox" />
+                        </label>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="flex gap-2 my-8">
+        @if (Model.Course.Id != 0)
+        {
+            <input asp-for="Course.Id" type="hidden" />
+            <input asp-for="Course.CourseId" type="hidden" />
+            <input asp-for="Course.Ranking" type="hidden" />
+        }
+        <input asp-for="Course.InstructorWishlistId" type="hidden" />
+        <a asp-page="Index" class="w-100 btn btn-lg btn-outline">Cancel</a>
+        @if (Model.Course.CourseId != 0)
+        {
+            @* for the edit page *@
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
+        }
+        else
+        {
+            @* for the add page *@
+            <button id="submit" type="submit" class="w-100 btn btn-lg btn-primary" disabled>Save</button>
+        }
+</form>
+
+@section Scripts
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var courseDropdown = document.getElementById('ddlCourse');
+            var saveButton = document.getElementById('submit');
+
+
+            function toggleSaveButton() {
+                if (courseDropdown.selectedIndex === 0) {
+                    saveButton.disabled = true;
+                } else {
+                    saveButton.disabled = false;
+                }
+            }
+
+            if (courseDropdown) {
+                toggleSaveButton();
+                courseDropdown.addEventListener('change', toggleSaveButton);
+            }
+        });
+    </script>
+    <script src="~/js/wishlistCourse.js" asp-append-version="true"></script>
+}

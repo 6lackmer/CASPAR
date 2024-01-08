@@ -1,0 +1,27 @@
+﻿@page
+@model CASPAR.Pages.Admin.Amenities.UpsertModel
+@{
+    Layout = "_LayoutAdministration";
+    ViewData["Title"] = $"{(Model.Amenity.Id == 0 ? "Add" : "Edit")} Amenity";
+}
+
+<h1>@(Model.Amenity.Id == 0 ? "Add" : "Edit") Amenity</h1>
+
+<form method="post" class="form">
+    <fieldset class="form-fields">
+        <div class="form-group">
+            <label asp-for="Amenity.FeatureName"></label>
+            <input asp-for="Amenity.FeatureName" />
+            <span asp-validation-for="Amenity.FeatureName" class="text-sm text-red-600"></span>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        @if (Model.Amenity.Id != 0)
+        {
+            <input asp-for="Amenity.Id" type="hidden" />
+        }
+        <a asp-area="" asp-page="Index" class="btn">Cancel</a>
+        <button type="submit" class="btn btn-success icon-check">Save</button>
+    </div>
+</form>

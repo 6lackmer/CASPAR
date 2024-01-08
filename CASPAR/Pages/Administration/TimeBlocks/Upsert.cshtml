@@ -1,0 +1,37 @@
+﻿@page
+@model CASPAR.Pages.Admin.TimeBlocks.UpsertModel
+@{
+    Layout = "_LayoutAdministration";
+    ViewData["Title"] = $"{(Model.TimeBlock.Id == 0 ? "Create" : "Edit")} Time Block";
+}
+
+<h1>@(Model.TimeBlock.Id == 0 ? "Create" : "Edit") Time Block</h1>
+
+<form method="post" class="form">
+    <fieldset class="form-fields">
+        <div class="form-group">
+            <label asp-for="TimeBlock.TimeBlockName"></label>
+            <input asp-for="TimeBlock.TimeBlockName" />
+            <span asp-validation-for="TimeBlock.TimeBlockName" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label class="ms-2">Time Block Type</label>
+            @Html.DropDownListFor(t =>
+            t.TimeBlock.TimeBlockTypeId,
+            Model.TimeBlockTypes,
+            "",
+            new { @class = "" }
+            )
+            <span asp-validation-for="TimeBlock.TimeBlockTypeId" class="text-sm text-red-600"></span>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        @if (Model.TimeBlock.Id != 0)
+        {
+            <input asp-for="TimeBlock.Id" type="hidden" />
+        }
+        <a asp-area="" asp-page="Index" class="btn">Cancel</a>
+        <button type="submit" class="btn btn-success icon-check">Save</button>
+    </div>
+</form>

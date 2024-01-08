@@ -1,0 +1,96 @@
+﻿<div class="hidden">
+    @* These need to be moved here, otherwise they cause extra space to appear above the navbar *@
+    ﻿@using Microsoft.AspNetCore.Identity
+    @using Infrastructure.Models
+    @using Utility
+
+    @inject SignInManager<ApplicationUser> SignInManager
+    @inject UserManager<ApplicationUser> UserManager
+</div>
+<header class="bg-neutral-900 text-neutral-50 p-6 z-30">
+    <div class="container mx-auto flex flex-col lg:flex-row gap-x-8 gap-y-4 items-center">
+        <a class="title text-3xl font-bold tracking-wide mr-2 hover:text-primary-content transition" asp-area="" asp-page="/Index">CASPAR</a>
+        <div class="flex-grow flex flex-col sm:flex-row gap-x-6 gap-y-2">
+            @if (SignInManager.IsSignedIn(User))
+            {
+                if (User.IsInRole(SD.StudentRole) && User.IsInRole(SD.InstructorRole))
+                {
+                    <a class="flex items-center gap-1 hover:text-primary-content transition" asp-area="" asp-page="/Student/Wishlist/Index">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd" />
+                        </svg>
+                        Student Wishlist
+                    </a>
+                    <a class="flex items-center gap-1 hover:text-primary-content transition" asp-area="" asp-page="/Instructor/Wishlist/Index">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd" />
+                        </svg>
+                        Instructor Wishlist
+                    </a>
+                }
+                else if (User.IsInRole(SD.StudentRole))
+                {
+                    <a class="flex items-center gap-1 hover:text-primary-content transition" asp-area="" asp-page="/Student/Wishlist/Index">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd" />
+                        </svg>
+                        Wishlist
+                    </a>
+                }
+                else if (User.IsInRole(SD.InstructorRole))
+                {
+                    <a class="flex items-center gap-1 hover:text-primary-content transition" asp-area="" asp-page="/Instructor/Wishlist/Index">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd" />
+                        </svg>
+                        Wishlist
+                    </a>
+                }
+
+                if (User.IsInRole(SD.AdminRole) || User.IsInRole(SD.ProgramCoordinatorRole) || User.IsInRole(SD.SecretaryRole) || User.IsInRole(SD.FlexCoordinatorRole) || User.IsInRole(SD.GraduateCoordinatorRole))
+                {
+                    <a class="flex items-center gap-1 hover:text-primary-content transition" asp-area="" asp-page="/Schedule/Index">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z" clip-rule="evenodd" />
+                        </svg>
+                        Schedule
+                    </a>
+                }
+
+                if (User.IsInRole(SD.AdminRole))
+                {
+                    <a class="flex items-center gap-1 hover:text-primary-content transition" asp-area="" asp-page="/Tools/Index">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                             class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M14.5 10a4.5 4.5 0 004.284-5.882c-.105-.324-.51-.391-.752-.15L15.34 6.66a.454.454 0 01-.493.11 3.01 3.01 0 01-1.618-1.616.455.455 0 01.11-.494l2.694-2.692c.24-.241.174-.647-.15-.752a4.5 4.5 0 00-5.873 4.575c.055.873-.128 1.808-.8 2.368l-7.23 6.024a2.724 2.724 0 103.837 3.837l6.024-7.23c.56-.672 1.495-.855 2.368-.8.096.007.193.01.291.01zM5 16a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd" />
+                            <path d="M14.5 11.5c.173 0 .345-.007.514-.022l3.754 3.754a2.5 2.5 0 01-3.536 3.536l-4.41-4.41 2.172-2.607c.052-.063.147-.138.342-.196.202-.06.469-.087.777-.067.128.008.257.012.387.012zM6 4.586l2.33 2.33a.452.452 0 01-.08.09L6.8 8.214 4.586 6H3.309a.5.5 0 01-.447-.276l-1.7-3.402a.5.5 0 01.093-.577l.49-.49a.5.5 0 01.577-.094l3.402 1.7A.5.5 0 016 3.31v1.277z" />
+                        </svg>
+                        Tools
+                    </a>
+                }
+
+                //TODO: complete the reports pages and uncomment this block 
+                @* if (User.IsInRole(SD.InstructorRole) || User.IsInRole(SD.SecretaryRole) || User.IsInRole(SD.ProgramCoordinatorRole) || User.IsInRole(SD.FlexCoordinatorRole) || User.IsInRole(SD.GraduateCoordinatorRole) || User.IsInRole(SD.AdminRole))
+                {
+                    <a class="flex items-center gap-1 hover:text-primary-content transition" asp-area="" asp-page="/Reports">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                            <path d="M12 9a1 1 0 01-1-1V3c0-.553.45-1.008.997-.93a7.004 7.004 0 015.933 5.933c.078.547-.378.997-.93.997h-5z" />
+                            <path d="M8.003 4.07C8.55 3.992 9 4.447 9 5v5a1 1 0 001 1h5c.552 0 1.008.45.93.997A7.001 7.001 0 012 11a7.002 7.002 0 016.003-6.93z" />
+                        </svg>
+                        Reports
+                    </a>
+                } *@
+                if (User.IsInRole(SD.AdminRole))
+                {
+                    <a class="flex items-center gap-1 hover:text-primary-content transition" asp-area="" asp-page="/Administration/Index">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                            <path d="M10 3.75a2 2 0 10-4 0 2 2 0 004 0zM17.25 4.5a.75.75 0 000-1.5h-5.5a.75.75 0 000 1.5h5.5zM5 3.75a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5a.75.75 0 01.75.75zM4.25 17a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5h1.5zM17.25 17a.75.75 0 000-1.5h-5.5a.75.75 0 000 1.5h5.5zM9 10a.75.75 0 01-.75.75h-5.5a.75.75 0 010-1.5h5.5A.75.75 0 019 10zM17.25 10.75a.75.75 0 000-1.5h-1.5a.75.75 0 000 1.5h1.5zM14 10a2 2 0 10-4 0 2 2 0 004 0zM10 16.25a2 2 0 10-4 0 2 2 0 004 0z" />
+                        </svg>
+                        Administration
+                    </a>
+                }
+            }
+        </div>
+        <partial name="_LoginPartial" />
+    </div>
+</header>

@@ -1,0 +1,564 @@
+﻿@using CASPAR.ViewModels;
+@using DataAccess;
+@using Infrastructure.Models;
+@using Microsoft.EntityFrameworkCore;
+@using Utility;
+
+@namespace CASPAR.Pages.Schedule.Builder
+
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+
+@{
+    int i = 0;
+}
+
+<EditForm EditContext="EditContext" OnSubmit="UpdateSectionAsync" class="w-full">
+    <div class="flex-grow grid grid-cols-2 xl:grid-cols-3 gap-8 ml-3 text-sm pb-4">
+        <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-1 text-xs text-purple-800">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                    <path fill-rule="evenodd" d="M9.664 1.319a.75.75 0 01.672 0 41.059 41.059 0 018.198 5.424.75.75 0 01-.254 1.285 31.372 31.372 0 00-7.86 3.83.75.75 0 01-.84 0 31.508 31.508 0 00-2.08-1.287V9.394c0-.244.116-.463.302-.592a35.504 35.504 0 013.305-2.033.75.75 0 00-.714-1.319 37 37 0 00-3.446 2.12A2.216 2.216 0 006 9.393v.38a31.293 31.293 0 00-4.28-1.746.75.75 0 01-.254-1.285 41.059 41.059 0 018.198-5.424zM6 11.459a29.848 29.848 0 00-2.455-1.158 41.029 41.029 0 00-.39 3.114.75.75 0 00.419.74c.528.256 1.046.53 1.554.82-.21.324-.455.63-.739.914a.75.75 0 101.06 1.06c.37-.369.69-.77.96-1.193a26.61 26.61 0 013.095 2.348.75.75 0 00.992 0 26.547 26.547 0 015.93-3.95.75.75 0 00.42-.739 41.053 41.053 0 00-.39-3.114 29.925 29.925 0 00-5.199 2.801 2.25 2.25 0 01-2.514 0c-.41-.275-.826-.541-1.25-.797a6.985 6.985 0 01-1.084 3.45 26.503 26.503 0 00-1.281-.78A5.487 5.487 0 006 12v-.54z" clip-rule="evenodd"></path>
+                </svg>
+                Course
+            </div>
+            <div class="grid grid-rows-3">
+                <div class="form-group">
+                    <label for="instructorId" class="font-bold">Instructor</label>
+                    <InputSelect id="instructorId" @bind-Value="SectionForm!.InstructorId">
+                        <option></option>
+                        @foreach (var instructor in Instructors)
+                        {
+                            <option value="@instructor.Id">@instructor.ApplicationUser?.FirstName @instructor.ApplicationUser?.LastName</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="form-group">
+                    <label for="maxEnrollment" class="font-bold">Max Enrollment</label>
+                    <InputNumber id="maxEnrollment" @bind-Value="SectionForm!.MaxEnrollment" />
+                </div>
+                <div class="grid grid-cols-2 gap-1">
+                    <div class="form-group">
+                        <label for="creditHours" class="font-bold">Student Credit Hours</label>
+                        <span id="creditHours" class="px-2 py-1">@Section.Course?.CreditHours</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="creditHours" class="font-bold">Instructor Paid Credits</label>
+                        <span id="creditHours" class="px-2 py-1">@InstructorCreditHours</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-1 text-xs text-purple-800">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clip-rule="evenodd"></path>
+                </svg>
+                Time
+            </div>
+            <div class="grid grid-rows-3">
+                <div class="form-group">
+                    <label for="partOfTermId" class="font-bold">Part-of-term</label>
+                    <InputSelect id="partOfTermId" @bind-Value="SectionForm!.PartOfTermId">
+                        <option></option>
+                        @foreach (var partOfTerm in PartsOfTerm)
+                        {
+                            <option @key="partOfTerm.Id" value="@partOfTerm.Id">@partOfTerm.PartOfTermTitle</option>
+                        }
+                    </InputSelect>
+                </div>
+                @if (Modalities.FirstOrDefault(t => t.Id == SectionForm!.ModalityId && t.HasTimeBlocks) != null)
+                {
+                    <div class="grid grid-cols-5 justify-between gap-x-1">
+                        @foreach (var day in SectionForm.DaysOfWeek)
+                        {
+                            <label class="flex flex-col font-bold">
+                                @day.Text
+                                <input type="checkbox" @bind-value="@day.Checked" class="checkbox h-8 w-8" checked="@day.Checked" @bind-value:after="GetSectionTimeList" />
+                            </label>
+                        }
+                    </div>
+                    <div class="">
+                        <div class="form-group">
+                            <label for="sectionTime" class="font-bold">Start and End Time</label>
+                            <InputSelect id="sectionTime" @bind-Value="SectionForm!.SectionTimeId">
+                                <option></option>
+                                @foreach (var sectionTime in SectionTimes)
+                                {
+                                    <option @key="sectionTime.Id" value="@sectionTime.Id">@sectionTime.DisplayText</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-1 text-xs text-purple-800">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                    <path fill-rule="evenodd" d="M4 16.5v-13h-.25a.75.75 0 010-1.5h12.5a.75.75 0 010 1.5H16v13h.25a.75.75 0 010 1.5h-3.5a.75.75 0 01-.75-.75v-2.5a.75.75 0 00-.75-.75h-2.5a.75.75 0 00-.75.75v2.5a.75.75 0 01-.75.75h-3.5a.75.75 0 010-1.5H4zm3-11a.5.5 0 01.5-.5h1a.5.5 0 01.5.5v1a.5.5 0 01-.5.5h-1a.5.5 0 01-.5-.5v-1zM7.5 9a.5.5 0 00-.5.5v1a.5.5 0 00.5.5h1a.5.5 0 00.5-.5v-1a.5.5 0 00-.5-.5h-1zM11 5.5a.5.5 0 01.5-.5h1a.5.5 0 01.5.5v1a.5.5 0 01-.5.5h-1a.5.5 0 01-.5-.5v-1zm.5 3.5a.5.5 0 00-.5.5v1a.5.5 0 00.5.5h1a.5.5 0 00.5-.5v-1a.5.5 0 00-.5-.5h-1z" clip-rule="evenodd"></path>
+                </svg>
+                Location
+            </div>
+            <div class="grid grid-rows-3">
+                <div class="form-group">
+                    <label for="modalityId" class="font-bold">Modality</label>
+                    <InputSelect id="modalityId" @bind-Value="SectionForm!.ModalityId">
+                        <option></option>
+                        @foreach (var modality in Modalities)
+                        {
+                            <option @key="modality.Id" value="@modality.Id">@modality.ModalityName</option>
+                        }
+                    </InputSelect>
+                </div>
+                @if (Modalities.FirstOrDefault(t => t.Id == SectionForm!.ModalityId && t.HasCampuses) != null)
+                {
+                    <div class="form-group">
+                        <label for="campusId" class="font-bold">Campus</label>
+                        <InputSelect id="campusId" @bind-Value="SectionForm!.CampusId">
+                            <option></option>
+                            @foreach (var campus in Campuses)
+                            {
+                                <option @key="campus.Id" value="@campus.Id">@campus.CampusName</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1">
+                        <div class="form-group">
+                            <label for="buildingId" class="font-bold">Building</label>
+                            <InputSelect id="buildingId" @bind-Value="SectionForm!.BuildingId">
+                                <option></option>
+                                @foreach (var building in Buildings)
+                                {
+                                    <option @key="building.Id" value="@building.Id">@building.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="form-group">
+                            <label for="classroomId" class="font-bold">Classroom</label>
+                            <InputSelect id="classroomId" @bind-Value="SectionForm!.ClassroomId">
+                                <option></option>
+                                @foreach (var classroom in Classrooms)
+                                {
+                                    var disabled = OccupiedClassrooms.Contains(classroom.Id);
+
+                                    <option @key="classroom.Id" value="@classroom.Id" disabled="@disabled">@classroom.ClassroomNumber @(disabled ? "(Occupied)" : "")</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-1 text-xs text-purple-800">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                    <path d="M10.75 10.818v2.614A3.13 3.13 0 0011.888 13c.482-.315.612-.648.612-.875 0-.227-.13-.56-.612-.875a3.13 3.13 0 00-1.138-.432zM8.33 8.62c.053.055.115.11.184.164.208.16.46.284.736.363V6.603a2.45 2.45 0 00-.35.13c-.14.065-.27.143-.386.233-.377.292-.514.627-.514.909 0 .184.058.39.202.592.037.051.08.102.128.152z"></path>
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-6a.75.75 0 01.75.75v.316a3.78 3.78 0 011.653.713c.426.33.744.74.925 1.2a.75.75 0 01-1.395.55 1.35 1.35 0 00-.447-.563 2.187 2.187 0 00-.736-.363V9.3c.698.093 1.383.32 1.959.696.787.514 1.29 1.27 1.29 2.13 0 .86-.504 1.616-1.29 2.13-.576.377-1.261.603-1.96.696v.299a.75.75 0 11-1.5 0v-.3c-.697-.092-1.382-.318-1.958-.695-.482-.315-.857-.717-1.078-1.188a.75.75 0 111.359-.636c.08.173.245.376.54.569.313.205.706.353 1.138.432v-2.748a3.782 3.782 0 01-1.653-.713C6.9 9.433 6.5 8.681 6.5 7.875c0-.805.4-1.558 1.097-2.096a3.78 3.78 0 011.653-.713V4.75A.75.75 0 0110 4z" clip-rule="evenodd"></path>
+                </svg>
+                Payment
+            </div>
+            
+            @foreach (var sectionPay in SectionForm.SectionPays ?? new List<SectionPay>())
+            {
+                <div class="flex items-center gap-1">
+                    <div class="flex-grow grid grid-cols-5 items-end gap-1">
+                        <div class="form-group col-span-2">
+                            <label for="@($"payModelId{i}")" class="font-bold">Pay model</label>
+                            <InputSelect id="@($"payModelId{i}")" @bind-Value="sectionPay.PayModelId">
+                                <option></option>
+                                @foreach (var payModel in PayModels)
+                                {
+                                    <option @key="payModel.Id" value="@payModel.Id">@payModel.PayModelTitle</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="form-group col-span-2">
+                            <label for="@($"fundingSourceId{i}")" class="font-bold">Funding source</label>
+                            <InputSelect id="@($"fundingSourceId{i}")" @bind-Value="sectionPay.PayOrgId">
+                                <option></option>
+                                @foreach (var fundingSource in FundingSources)
+                                {
+                                    <option @key="fundingSource.Id" value="@fundingSource.Id">@fundingSource.PayOrgTitle</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="form-group">
+                            <label for="@($"payModelCredits{i}")" class="font-bold">Credits</label>
+                            <InputNumber id="@($"payModelCredits{i}")" @bind-Value="sectionPay.CreditHours" />
+                        </div>
+                    </div>
+                    <button type="button" class="text-neutral-700 hover:text-error" disabled="@Loading" @onclick="@(() => RemoveSectionPayModel(sectionPay))">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </div>
+            }
+            <button type="button" class="flex gap-2 justify-center rounded-full text-purple-100 bg-purple-800 font-bold p-2" disabled="@Loading" @onclick="AddSectionPayModel">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                    <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+                </svg>
+                Add Pay Model
+            </button>
+        </div>
+        <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-1 text-xs text-purple-800">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                    <path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z"></path>
+                </svg>
+                Notes
+            </div>
+            <div class="form-group">
+                <label class="font-bold">Notes</label>
+                <InputTextArea @bind-Value="SectionForm!.SectionNotes" class="h-28"></InputTextArea>
+            </div>
+        </div>
+        <div class="h-full flex flex-col gap-1">
+            <div class="flex items-center gap-1 text-xs text-purple-800">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                    <path d="M3.5 2.75a.75.75 0 00-1.5 0v14.5a.75.75 0 001.5 0v-4.392l1.657-.348a6.449 6.449 0 014.271.572 7.948 7.948 0 005.965.524l2.078-.64A.75.75 0 0018 12.25v-8.5a.75.75 0 00-.904-.734l-2.38.501a7.25 7.25 0 01-4.186-.363l-.502-.2a8.75 8.75 0 00-5.053-.439l-1.475.31V2.75z" />
+                </svg>
+                Review
+            </div>
+            <div class="h-full flex flex-col justify-between">
+                <div class="form-group">
+                    <label for="statusId" class="font-bold">Status</label>
+                    <InputSelect id="statusId" @bind-Value="SectionForm!.SectionStatusId">
+                        <option></option>
+                        @foreach (var status in SectionStatuses)
+                        {
+                            <option value="@status.Id">@status.SectionStatusName</option>
+                        }
+                    </InputSelect>
+                </div>
+                <span></span>
+                <div class="flex flex-col gap-3">
+                    <button type="submit" class="flex gap-2 justify-center rounded-full bg-emerald-400 font-bold p-2" disabled="@Loading">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"></path>
+                        </svg>
+                        Save changes
+                    </button>
+                    <button type="button" @onclick="OnCancelCallback" class="rounded-full bg-neutral-300 font-bold p-2" disabled="@Loading">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+
+    [CascadingParameter(Name = "SemesterInstanceId")]
+    public int SemesterInstanceId { get; set; }
+
+    [Parameter]
+    public int? SectionId { get; set; }
+
+    [Parameter]
+    public EventCallback OnChangesSavedCallback { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancelCallback { get; set; }
+
+    public Section Section { get; set; } = new();
+
+    public SectionForm SectionForm { get; set; }
+
+    private EditContext EditContext;
+
+    public IEnumerable<Instructor> Instructors { get; set; } = new List<Instructor>();
+
+    public IEnumerable<Modality> Modalities { get; set; } = new List<Modality>();
+
+    public IEnumerable<Campus> Campuses { get; set; } = new List<Campus>();
+
+    public IEnumerable<Building> Buildings { get; set; } = new List<Building>();
+
+    public IEnumerable<Classroom> Classrooms { get; set; } = new List<Classroom>();
+
+    public IEnumerable<int?> OccupiedClassrooms { get; set; } = new List<int?>();
+
+    public IEnumerable<PartOfTerm> PartsOfTerm { get; set; } = new List<PartOfTerm>();
+
+    public IEnumerable<SectionStatus> SectionStatuses { get; set; } = new List<SectionStatus>();
+
+    public IEnumerable<SectionTime> SectionTimes { get; set; } = new List<SectionTime>();
+
+    public IEnumerable<PayModel> PayModels { get; set; } = new List<PayModel>();
+
+    public IEnumerable<PayOrg> FundingSources { get; set; } = new List<PayOrg>();
+
+    public int DaysOfWeekChecked { get; set; }
+
+    public decimal InstructorCreditHours { get; set; }
+
+    public bool Loading { get; set; }
+
+    public UpdateSection()
+    {
+        SectionForm = new();
+        EditContext = new EditContext(SectionForm);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        if (SectionId != null)
+        {
+            Section = await context.Sections.Include("Course").Include("SectionPays").Include("SectionTime").FirstAsync(s => s.Id == SectionId);
+        }
+
+        Classroom? classroom = await context.Classrooms.FirstOrDefaultAsync(t => t.Id == Section.ClassroomId);
+        Building? building = classroom != null ? await context.Buildings.FirstOrDefaultAsync(t => t.Id == classroom.BuildingId) : null;
+        Campus? campus = building != null ? await context.Campuses.FirstOrDefaultAsync(t => t.Id == building.CampusId) : null;
+
+        if (Section.SectionPays == null)
+        {
+            Section.SectionPays = new List<SectionPay>();
+        }
+
+        if (Section.SectionPays.Count == 0)
+        {
+            Section.SectionPays.Add(new SectionPay
+            {
+                SectionId = SectionId ?? 0,
+            });
+        }
+
+        SectionForm = new SectionForm
+            {
+                Id = Section.Id,
+                InstructorId = Section.InstructorId,
+                MaxEnrollment = Section.MaxEnrollment,
+                ModalityId = Section.ModalityId,
+                CampusId = campus?.Id,
+                BuildingId = building?.Id,
+                ClassroomId = Section.ClassroomId,
+                PartOfTermId = Section.PartOfTermId,
+                SectionStatusId = Section.SectionStatusId,
+                DaysOfWeek = Functions.ParseDaysOfWeek(Section.DaysOfWeek),
+                SectionTimeId = Section.SectionTimeId,
+                SectionPays = Section.SectionPays.ToList(),
+                SectionNotes = Section.SectionNotes
+            };
+
+        EditContext = new EditContext(SectionForm);
+        EditContext.OnFieldChanged += EditContext_OnFieldChanged;
+
+        GetInstructorList();
+        GetModalityList();
+        GetCampusList();
+        GetBuildingList();
+        GetClassroomList();
+        GetOccupiedClassrooms();
+        GetPartOfTermList();
+        GetSectionStatusList();
+        await GetSectionTimeList();
+        GetPayModelList();
+        GetFundingSourceList();
+
+        DaysOfWeekChecked = SectionForm.DaysOfWeek.Where(t => t.Checked).Count();
+        InstructorCreditHours = SectionForm.SectionPays.Select(s => s.CreditHours).Sum();
+    }
+
+    private async void EditContext_OnFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        if (e.FieldIdentifier.FieldName == "ModalityId")
+        {
+            // var modality = Modalities.FirstOrDefault(t => t.Id == SectionForm!.ModalityId);
+
+            // if (modality != null)
+            // {
+            //     if (!modality.HasCampuses)
+            //     {
+            //         SectionForm.CampusId = 0;
+            //         SectionForm.BuildingId = 0;
+            //         SectionForm.ClassroomId = 0;
+            //         GetBuildingList();
+            //         GetClassroomList();
+            //     }
+
+            //     if (!modality.HasTimeBlocks) 
+            //     {
+            //         SectionForm.DaysOfWeek = string.Empty;
+            //         SectionForm.StartTime = TimeOnly.MinValue;
+            //         SectionForm.EndTime = TimeOnly.MinValue;
+            //     }
+            // }
+        }
+        if (e.FieldIdentifier.FieldName == "CampusId")
+        {
+            SectionForm.BuildingId = null;
+            SectionForm.ClassroomId = null;
+            GetBuildingList();
+            GetClassroomList();
+        }
+        if (e.FieldIdentifier.FieldName == "BuildingId")
+        {
+            SectionForm.ClassroomId = null;
+            GetClassroomList();
+        }
+        if (e.FieldIdentifier.FieldName == "ClassroomId")
+        {
+            SectionForm.MaxEnrollment = Classrooms.FirstOrDefault(t => t.Id == SectionForm.ClassroomId)?.ClassroomCapacity ?? 30;
+        }
+        if (e.FieldIdentifier.FieldName == "SectionTimeId" || e.FieldIdentifier.FieldName == "DaysOfWeek")
+        {
+            GetOccupiedClassrooms();
+            await GetSectionTimeList();
+        }
+        if (e.FieldIdentifier.FieldName == "CreditHours")
+        {
+            InstructorCreditHours = SectionForm.SectionPays.Select(s => s.CreditHours).Sum();
+        }
+    }
+
+    private async Task UpdateSectionAsync()
+    {
+        Loading = true;
+
+        using var context = DbFactory.CreateDbContext();
+
+        if (SectionId != null)
+        {
+            Section = await context.Sections.Include("SectionPays").FirstAsync(s => s.Id == SectionId);
+        }
+
+        Section.Id = SectionForm.Id;
+        Section.InstructorId = SectionForm.InstructorId;
+        Section.MaxEnrollment = SectionForm.MaxEnrollment;
+        Section.ModalityId = SectionForm.ModalityId;
+        Section.ClassroomId = SectionForm.ClassroomId;
+        Section.PartOfTermId = SectionForm.PartOfTermId;
+        Section.SectionStatusId = SectionForm.SectionStatusId ?? 0;
+        Section.DaysOfWeek = Functions.DaysOfWeekToString(SectionForm.DaysOfWeek);
+        Section.SectionTimeId = SectionForm.SectionTimeId;
+        Section.SectionPays = SectionForm.SectionPays.Where(s => !(s.PayModelId == null && s.PayOrgId == null && s.CreditHours == 0)).ToList();
+        Section.SectionNotes = SectionForm.SectionNotes;
+
+        context.Entry(Section).State = EntityState.Modified;
+        await context.SaveChangesAsync();
+
+        Loading = false;
+
+        await OnChangesSavedCallback.InvokeAsync();
+    }
+
+    private void AddSectionPayModel()
+    {
+        SectionForm.SectionPays?.Add(new SectionPay
+        {
+            SectionId = SectionId ?? 0,
+        });
+    }
+
+    private void RemoveSectionPayModel(SectionPay sectionPay)
+    {
+        SectionForm.SectionPays?.Remove(sectionPay);
+    }
+
+    private void GetInstructorList()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        //TODO: Filter instructors based on load
+        Instructors = context.Instructors.Include("ApplicationUser").OrderBy(t => t.ApplicationUser != null ? t.ApplicationUser.LastName : t.Id.ToString()).ToList();
+    }
+
+    private void GetModalityList()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        Modalities = context.Modalitys.OrderBy(t => t.ModalityName).ToList();
+    }
+
+    private void GetCampusList()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        Campuses = context.Campuses.OrderBy(t => t.CampusName).ToList();
+    }
+
+    private void GetBuildingList()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        Buildings = context.Buildings.Where(t => t.CampusId == SectionForm.CampusId).OrderBy(t => t.Name).ToList();
+    }
+
+    private void GetClassroomList()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        Classrooms = context.Classrooms.Where(t => t.BuildingId == SectionForm.BuildingId).OrderBy(t => t.ClassroomNumber).ToList();
+    }
+
+    private void GetPartOfTermList()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        PartsOfTerm = context.PartOfTerms.OrderBy(t => t.PartOfTermTitle).ToList();
+    }
+
+    private void GetSectionStatusList()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        SectionStatuses = context.SectionStatuses.ToList();
+    }
+
+    private async Task GetSectionTimeList()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        int? creditHours = Section.Course?.CreditHours;
+        int daysPerWeek = SectionForm.DaysOfWeek.Where(t => t.Checked == true).Count();
+
+        SectionTimes = await context.SectionTimes
+        .Where(t => (creditHours == null || (creditHours != null && t.CreditHours == creditHours)) && (daysPerWeek == 0 || t.DaysPerWeek == daysPerWeek))
+        .OrderBy(t => t.StartTime)
+        .ToListAsync();
+    }
+
+    private void GetPayModelList()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        //TODO: Auto select pay model depending on instructor load
+        PayModels = context.PayModels.OrderBy(t => t.PayModelTitle).ToList();
+    }
+
+    private void GetFundingSourceList()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        FundingSources = context.PayOrgs.OrderBy(t => t.PayOrgTitle).ToList();
+    }
+
+    private void GetOccupiedClassrooms()
+    {
+        var daysOfWeek = Functions.DaysOfWeekToString(SectionForm.DaysOfWeek);
+
+        if (SectionForm.SectionTimeId != null && !string.IsNullOrEmpty(daysOfWeek)) {
+            using var context = DbFactory.CreateDbContext();
+
+            var sectionTime = context.SectionTimes.Where(t => t.Id == SectionForm.SectionTimeId).FirstOrDefault() ?? new SectionTime();
+
+            var startTime = new TimeSpan(sectionTime.StartTime.Ticks);
+            var endTime = new TimeSpan(sectionTime.EndTime.Ticks);
+
+            //get all other sections that have overlapping schedules and a classroom
+            var overlappingSections = context.Sections.Where(s => s.SemesterInstanceId == SemesterInstanceId && s.Id != SectionId &&
+                s.ClassroomId != null &&
+                ((s.SectionTime.StartTime <= startTime && s.SectionTime.EndTime >= startTime) ||
+                (s.SectionTime.StartTime <= endTime && s.SectionTime.EndTime >= endTime) ||
+                (s.SectionTime.StartTime >= startTime && s.SectionTime.EndTime <= endTime))
+            ).ToList();
+
+            //get classrooms that are occupied during the same day and time
+            OccupiedClassrooms = overlappingSections.Where(s => s.DaysOfWeek.Any(d => daysOfWeek.Contains(d))).Select(s => s.ClassroomId).Distinct().ToList();
+        }
+    }
+
+}

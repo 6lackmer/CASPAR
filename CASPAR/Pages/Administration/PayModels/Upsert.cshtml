@@ -1,0 +1,27 @@
+﻿@page
+@model CASPAR.Pages.Admin.PayModels.UpsertModel
+@{
+    Layout = "_LayoutAdministration";
+    ViewData["Title"] = $"{(Model.PayModel.Id == 0 ? "Add" : "Edit")} Pay Model";
+}
+
+<h1>@(Model.PayModel.Id == 0 ? "Add" : "Edit") Pay Model</h1>
+
+<form method="post" class="form">
+    <fieldset class="form-fields">
+        <div class="form-group">
+            <label asp-for="PayModel.PayModelTitle"></label>
+            <input asp-for="PayModel.PayModelTitle" />
+            <span asp-validation-for="PayModel.PayModelTitle" class="text-sm text-red-600"></span>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        @if (Model.PayModel.Id != 0)
+        {
+            <input asp-for="PayModel.Id" type="hidden" />
+        }
+        <a asp-area="" asp-page="Index" class="btn">Cancel</a>
+        <button type="submit" class="btn btn-success icon-check">Save</button>
+    </div>
+</form>

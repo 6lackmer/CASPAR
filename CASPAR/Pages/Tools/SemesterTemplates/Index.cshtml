@@ -1,0 +1,77 @@
+﻿@page
+@model CASPAR.Pages.Tools.SemesterTemplates.IndexModel
+@{
+    Layout = "_LayoutTools";
+    ViewData["Title"] = "Tools";
+}
+<div class="flex flex-row justify-between mb-2 pb-6">
+    <h1>Select Template</h1>
+    <a class="btn btn-primary" asp-area="" asp-route-id="1" asp-page="Index">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+            <path fill-rule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z" clip-rule="evenodd" />
+        </svg>
+        Fall Template
+    </a>
+    <a class="btn btn-primary" asp-area="" asp-route-id="2" asp-page="Index">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+            <path fill-rule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z" clip-rule="evenodd" />
+        </svg>
+        Spring Template
+    </a>
+    <a class="btn btn-primary" asp-area="" asp-route-id="3" asp-page="Index">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+            <path fill-rule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z" clip-rule="evenodd" />
+        </svg>
+        Summer Template
+    </a>
+</div>
+<hr class="my-8" />
+<div class="card">
+    <div class="flex flex-row justify-between mb-2">
+        <h1>Manage @Model.Template.Semester.SemesterName Template</h1>
+        <a class="btn btn-primary" asp-area="" asp-route-id="@Model.Template.Id" asp-page="Upsert">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+            </svg>
+            Add a Class
+        </a>
+    </div>
+
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th style="width: 12%">Course</th>
+                <th style="width: 10%">Total Quantity</th>
+                <th style="width: 10%">Face-to-Face</th>
+                <th style="width: 10%">Online</th>
+                <th style="width: 10%">Flex</th>
+                <th style="width: 10%">Virtual</th>
+                <th style="width: 10%">Hybrid</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var course in Model.CourseList)
+            {
+                <tr>
+                    <td>@course.Course.Program.ProgramCode @course.Course.CourseNumber</td>
+                    <td>@course.TotalCount</td>
+                    <td>@course.FaceToFaceCount</td>
+                    <td>@course.OnlineCount</td>
+                    <td>@course.FlexCount</td>
+                    <td>@course.VirtualCount</td>
+                    <td>@course.HybridCount</td>
+                    <td>
+                        <div class="col-6 col-sm-4 col-lg-6">
+                            <form method="post">
+                                <button type="submit" class="btn btn-sm btn-success icon-plus" asp-page-handler="plus" asp-route-courseId="@course.Id"></button>
+                                <button type="submit" class="btn btn-sm btn-error icon-minus" asp-page-handler="minus" asp-route-courseId="@course.Id"></button>
+                                <a class="btn btn-sm btn-warning icon-edit" asp-area="" asp-page="Upsert" asp-route-courseId="@course.Id" asp-route-templateId="@course.TemplateId">Edit</a>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

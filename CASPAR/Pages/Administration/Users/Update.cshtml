@@ -1,0 +1,61 @@
+﻿@page
+@model CASPAR.Pages.Administration.Users.UpdateModel
+@{
+	Layout = "_LayoutAdministration";
+	ViewData["Title"] = "Edit User Info";
+}
+
+<h1>Edit User Info</h1>
+
+<form method="post" class="form">
+	<fieldset class="form-fields">
+		<div class="form-group">
+			<label asp-for="@Model.AppUser.FirstName"></label>
+			<input asp-for="@Model.AppUser.FirstName" />
+			<span asp-validation-for="@Model.AppUser.FirstName" class="text-sm text-red-600"></span>
+		</div>
+
+		<div class="form-group">
+			<label asp-for="@Model.AppUser.LastName"></label>
+			<input asp-for="@Model.AppUser.LastName" />
+			<span asp-validation-for="@Model.AppUser.LastName" class="text-sm text-red-600"></span>
+		</div>
+
+		<div class="form-group">
+			<label asp-for="@Model.AppUser.Email"></label>
+			<input asp-for="@Model.AppUser.Email" />
+			<span asp-validation-for="@Model.AppUser.Email" class="text-sm text-red-600"></span>
+		</div>
+		<div class="form-group">
+			<div class="flex flex-row gap-3 justify-between">
+			@{
+				foreach (var r in Model.AllRoles)
+				{
+					<div class="form-check">
+						@{
+							if (Model.UserRoles.Contains(r.ToString()))
+							{
+								<label class="form-check-label">@r</label>
+								<input class="checkbox" name="roles" type="checkbox" id="@r" value="@r" checked>	
+							}
+							else
+							{
+								<label class="form-check-label">@r</label>
+								<input class="checkbox" name="roles" type="checkbox" id="@r" value="@r">
+							}
+						}
+					</div>
+				}
+			}
+			</div>
+		</div>
+
+	</fieldset>
+
+	<div class="form-actions">
+		<input type="hidden" value="@Model.AppUser.Id" asp-for="@Model.AppUser.Id" />
+		<input type="hidden" value="@Model.OldRoles.ToList()" asp-for="@Model.OldRoles" />
+		<a asp-area="" asp-page="Index" class="btn">Cancel</a>
+		<button type="submit" class="btn btn-success icon-check">Save</button>
+	</div>
+</form>

@@ -1,0 +1,194 @@
+﻿@using CASPAR.ViewModels;
+@using DataAccess;
+@using Infrastructure.Models;
+@using Microsoft.EntityFrameworkCore;
+
+@namespace CASPAR.Pages.Schedule.Builder
+
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+
+@if (Ready)
+{
+    <div class="flex-grow flex flex-col gap-4 pb-4">
+        <div class="sticky top-0">
+            <div class="flex justify-between align-center bg-neutral-50 pt-6 pb-2">
+                <h1 class="text-4xl mb-2">@SemesterInstance.Name</h1>
+                <div class="flex items-center gap-2">
+                    @if (UnassignedSectionCount > 0)
+                    {
+                        if (FilterUnassignedSections)
+                        {
+                            <button type="button" class="btn btn-error" @onclick="OnToggleFilter">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                                </svg>
+                                Clear Filter: @UnassignedSectionCount Section@(UnassignedSectionCount == 1 ? "" : "s")
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-outline" @onclick="OnToggleFilter">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                    <path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z" clip-rule="evenodd" />
+                                </svg>
+                                Filter Unassigned: @UnassignedSectionCount Section@(UnassignedSectionCount == 1 ? "" : "s")
+                            </button>
+                        }
+                    }
+                    <a class="btn btn-primary" href="/Schedule/Preview?id=@SemesterInstance.Id&returnRoute=builder">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                        </svg>
+                        Preview Schedule
+                    </a>
+                </div>
+            </div>
+            <div class="h-4 bg-gradient-to-b from-neutral-50"></div>
+        </div>
+
+        @foreach (var scheduleCourse in ScheduleCourses)
+        {
+            @if (!FilterUnassignedSections || (FilterUnassignedSections && scheduleCourse.UnassignedSectionCount > 0))
+            {
+                <div id="scheduleCourse@(scheduleCourse.Course.Id)" class="scroll-mt-24 flex flex-col bg-neutral-100/50 border border-neutral-200 rounded-lg">
+                    <button class="text-left p-3" @onclick="@(e => OnSelectCourse.InvokeAsync(scheduleCourse.Course.Id))">
+                        <div class="flex flex-row flex-wrap items-center gap-x-2 gap-y-1">
+                            <img class="h-5 w-5" src="@(SelectedCourseId == scheduleCourse.Course.Id ? "/img/chevron-down.svg" : "/img/chevron-right.svg")" />
+                            <span class="flex-grow text-lg font-bold">@scheduleCourse.Course.Program?.ProgramCode @scheduleCourse.Course.CourseNumber - @scheduleCourse.Course.CourseTitle</span>
+
+                            <div class="flex gap-x-2">
+                                <div class="flex items-center gap-1 text-xs bg-neutral-50 border border-neutral-300 rounded-full px-2 py-1">
+                                    @scheduleCourse.Course.CreditHours Credit@(scheduleCourse.Course.CreditHours == 1 ? "" : "s")
+                                </div>
+                                <div class="flex items-center gap-1 text-xs bg-neutral-50 border border-neutral-300 rounded-full px-2 py-1">
+                                    @scheduleCourse.SectionCount Section@(scheduleCourse.SectionCount == 1 ? "" : "s")
+                                </div>
+
+                                @if (scheduleCourse.UnassignedSectionCount > 0)
+                                {
+                                    <div class="flex items-center gap-1 text-xs text-red-700 bg-neutral-50 border border-neutral-300 rounded-full px-2 py-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                                             class="w-4 h-4">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                                        </svg>
+                                        @scheduleCourse.UnassignedSectionCount Unassigned Section@(scheduleCourse.UnassignedSectionCount == 1 ? "" : "s")
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </button>
+                    @if (SelectedCourseId == scheduleCourse.Course.Id)
+                    {
+                        <SectionList CourseId="SelectedCourseId" FilterUnassignedSections="FilterUnassignedSections" OnChangesSavedCallback="OnChangesSaved" OnSelectInstructor="OnSelectInstructor" />
+                    }
+                </div>
+            }
+        }
+    </div>
+}
+else
+{
+    <span class="loader"></span>
+}
+
+@code {
+
+    [CascadingParameter(Name = "SemesterInstanceId")]
+    public int SemesterInstanceId { get; set; }
+
+    [Parameter]
+    public int? SelectedCourseId { get; set; }
+
+    [Parameter]
+    public bool FilterUnassignedSections { get; set; }
+
+    [Parameter]
+    public EventCallback<int?> OnSelectCourse { get; set; }
+
+    [Parameter]
+    public EventCallback OnChangesSavedCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<int?> OnSelectInstructor { get; set; }
+
+    [Parameter]
+    public EventCallback OnToggleFilter { get; set; }
+
+    public SemesterInstance SemesterInstance { get; set; } = new();
+
+    public IEnumerable<ScheduleCourse> ScheduleCourses { get; set; } = new List<ScheduleCourse>();
+
+    public int UnassignedSectionCount { get; set; }
+
+    public bool Ready { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Ready = false;
+
+        using var context = DbFactory.CreateDbContext();
+
+        SemesterInstance = await context.SemesterInstances.FirstAsync(s => s.Id == SemesterInstanceId);
+
+        await UpdateData();
+
+        Ready = true;
+    }
+
+    private async Task UpdateData()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        var scheduleCourses = new List<ScheduleCourse>();
+
+        var courses = await context.Courses
+        .Where(c => c.Sections.Any(s => s.SemesterInstanceId == SemesterInstance.Id))
+        .Include("Program")
+        .OrderBy(c => c.Program.ProgramCode)
+        .ThenBy(c => c.CourseNumber)
+        .ToListAsync();
+
+        foreach (var course in courses)
+        {
+            scheduleCourses.Add(new ScheduleCourse
+                {
+                    Course = course,
+                    SectionCount = await GetSectionCount(course),
+                    UnassignedSectionCount = await GetUnassignedSectionCount(course),
+                });
+        }
+
+        UnassignedSectionCount = scheduleCourses.Select(s => s.UnassignedSectionCount).Sum();
+
+        ScheduleCourses = scheduleCourses;
+    }
+
+    private async Task OnChangesSaved()
+    {
+        await UpdateData();
+
+        await OnChangesSavedCallback.InvokeAsync();
+    }
+
+    private async Task<int> GetSectionCount(Course course)
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        return await context.Sections.Where(s => s.SemesterInstanceId == SemesterInstance.Id && s.CourseId == course.Id).CountAsync();
+    }
+
+    private async Task<int> GetUnassignedSectionCount(Course course)
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        return await context.Sections.Where(s => s.SemesterInstanceId == SemesterInstance.Id && s.CourseId == course.Id).CountAsync(s =>
+            !(s.InstructorId != null &&
+            s.ModalityId != null &&
+            s.PartOfTermId != null &&
+            (!s.Modality.HasCampuses || (s.Modality.HasCampuses && s.ClassroomId != null)) &&
+            (!s.Modality.HasTimeBlocks || (s.Modality.HasTimeBlocks && s.DaysOfWeek != string.Empty && s.SectionTime != null)) &&
+            (s.SectionPays != null && s.SectionPays.Count > 0))
+        );
+    }
+
+}

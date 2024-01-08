@@ -1,0 +1,80 @@
+﻿@page
+@model CASPAR.Pages.Schedule.SubmitModel
+@{
+}
+
+@using Infrastructure.Models
+
+@{
+    ViewData["Title"] = "Submit Schedule";
+}
+
+<form method="post">
+    <input type="hidden" asp-for="SemesterInstance.Id" />
+
+    <div class="hero">
+        <div class="max-w-4xl mt-8 mb-16 px-16 pt-14 pb-10 bg-neutral-100 rounded-lg">
+            <h1 class="mb-6">Submit Schedule: @Model.SemesterInstance.Name</h1>
+
+            <p>
+                The schedule for <strong>@Model.SemesterInstance.Name</strong> will be finalized and sent in for approval.
+                Please note that once a schedule is submitted, sections can no longer be added, modified, or removed.
+            </p>
+
+            <div class="grid grid-cols-2 divide-x mt-4 mb-8 bg-neutral-200/25 p-4">
+                <div class="pr-4 flex flex-col gap-6">
+                    <div class="form-group">
+                        <label class="text-primary">Semester Start Date</label>
+                        <span class="text-neutral-500">
+                            @Model.SemesterInstance.SemesterStartDate?.ToString("D")
+                        </span>
+                    </div>
+                    <div class="form-group">
+                        <label class="text-primary">Semester End Date</label>
+                        <span class="text-neutral-500">
+                            @Model.SemesterInstance.SemesterEndDate?.ToString("D")
+                        </span>
+                    </div>
+                    <div class="form-group">
+                        <label class="text-primary">Registration Start Date</label>
+                        <span class="text-neutral-500">
+                            @Model.SemesterInstance.SemesterRegistrationStart?.ToString("D")
+                        </span>
+                    </div>
+                    <div class="form-group">
+                        <label class="text-primary">Registration End Date</label>
+                        <span class="text-neutral-500">
+                            @Model.SemesterInstance.SemesterRegistrationEnd?.ToString("D")
+                        </span>
+                    </div>
+                </div>
+                <div class="pl-4 flex flex-col gap-6">
+                    <div class="form-group">
+                        <label class="text-primary">Scheduled Sections</label>
+                        <span class="text-neutral-500">
+                            @Model.SectionCount
+                        </span>
+                    </div>
+                    <div class="form-group">
+                        <label class="text-primary">Scheduled Credit Hours</label>
+                        <span class="text-neutral-500">
+                            @Model.CreditHours
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-right text-red-600">Are you sure you want to submit the schedule?</p>
+
+            <div class="flex items-center justify-end gap-2">
+                <a class="btn" asp-area="" asp-page="./Preview" asp-route-id="@Model.SemesterInstance.Id" asp-route-returnRoute="@Model.ReturnRoute">Cancel</a>
+                <button class="btn btn-success" type="submit">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                    Submit Schedule
+                </button>
+            </div>
+        </div>
+    </div>
+</form>

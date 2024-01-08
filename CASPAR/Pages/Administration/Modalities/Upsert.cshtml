@@ -1,0 +1,42 @@
+﻿@page
+@model CASPAR.Pages.Admin.Modalities.UpsertModel
+@{
+    Layout = "_LayoutAdministration";
+    ViewData["Title"] = $"{(Model.Modality.Id == 0 ? "Create" : "Edit")} Modality";
+}
+
+<h1>@(Model.Modality.Id == 0 ? "Create" : "Edit") Modality</h1>
+
+<form method="post" class="form">
+    <fieldset class="form-fields">
+        <div class="form-group">
+            <label asp-for="Modality.ModalityName"></label>
+            <input asp-for="Modality.ModalityName" />
+            <span asp-validation-for="Modality.ModalityName" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Modality.Description"></label>
+            <textarea asp-for="Modality.Description"></textarea>
+            <span asp-validation-for="Modality.Description" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group-checkbox">
+            <input asp-for="Modality.HasCampuses" class="checkbox" />
+            <label asp-for="Modality.HasCampuses"></label>
+            <span asp-validation-for="Modality.HasCampuses" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group-checkbox">
+            <input asp-for="Modality.HasTimeBlocks" class="checkbox" />
+            <label asp-for="Modality.HasTimeBlocks"></label>
+            <span asp-validation-for="Modality.HasTimeBlocks" class="text-sm text-red-600"></span>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        @if (Model.Modality.Id != 0)
+        {
+            <input asp-for="Modality.Id" type="hidden" />
+        }
+        <a asp-area="" asp-page="Index" class="btn">Cancel</a>
+        <button type="submit" class="btn btn-success icon-check">Save</button>
+    </div>
+</form>

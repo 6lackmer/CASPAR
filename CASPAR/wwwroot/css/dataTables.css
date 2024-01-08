@@ -1,0 +1,100 @@
+﻿:root {
+    --dt-row-selected: 13, 110, 253;
+    --dt-row-selected-text: 255, 255, 255;
+    --dt-row-selected-link: 9, 10, 11;
+    --dt-row-stripe: 0, 0, 0;
+    --dt-row-hover: 0, 0, 0;
+    --dt-column-ordering: 0, 0, 0;
+    --dt-html-background: white;
+}
+
+table.dataTable td.dt-control {
+    text-align: center;
+    cursor: pointer;
+}
+
+    table.dataTable td.dt-control:before {
+        display: inline-block;
+        color: rgba(0, 0, 0, 0.5);
+        content: "►";
+    }
+
+table.dataTable tr.dt-hasChild td.dt-control:before {
+    content: "▼";
+}
+
+table.dataTable thead > tr > th.sorting,
+table.dataTable thead > tr > th.sorting_asc,
+table.dataTable thead > tr > th.sorting_desc,
+table.dataTable thead > tr > th.sorting_asc_disabled,
+table.dataTable thead > tr > th.sorting_desc_disabled,
+table.dataTable thead > tr > td.sorting,
+table.dataTable thead > tr > td.sorting_asc,
+table.dataTable thead > tr > td.sorting_desc,
+table.dataTable thead > tr > td.sorting_asc_disabled,
+table.dataTable thead > tr > td.sorting_desc_disabled {
+    cursor: pointer;
+    position: relative;
+    padding-right: 26px;
+}
+
+    table.dataTable thead > tr > th.sorting:before,
+    table.dataTable thead > tr > th.sorting_asc:before,
+    table.dataTable thead > tr > th.sorting_desc:before,
+    table.dataTable thead > tr > th.sorting_asc_disabled:before,
+    table.dataTable thead > tr > th.sorting_desc_disabled:before,
+    table.dataTable thead > tr > td.sorting:before,
+    table.dataTable thead > tr > td.sorting_asc:before,
+    table.dataTable thead > tr > td.sorting_desc:before,
+    table.dataTable thead > tr > td.sorting_asc_disabled:before,
+    table.dataTable thead > tr > td.sorting_desc_disabled:before {
+        position: absolute;
+        display: block;
+        opacity: .125;
+        right: 0;
+        font-size: 1em;
+    }
+
+    table.dataTable thead > tr > th.sorting_asc:before,
+    table.dataTable thead > tr > th.sorting_asc_disabled:before,
+    table.dataTable thead > tr > td.sorting_asc:before,
+    table.dataTable thead > tr > td.sorting_asc_disabled:before {
+        content: url('../img/chevron-up.svg');
+        height: 20px;
+        width: 20px;
+    }
+
+    table.dataTable thead > tr > th.sorting_desc:before,
+    table.dataTable thead > tr > th.sorting_desc_disabled:before,
+    table.dataTable thead > tr > td.sorting_desc:before,
+    table.dataTable thead > tr > td.sorting_desc_disabled:before {
+        content: url('../img/chevron-down.svg');
+        height: 20px;
+        width: 20px;
+    }
+
+    table.dataTable thead > tr > th.sorting_asc:before,
+    table.dataTable thead > tr > th.sorting_desc:before,
+    table.dataTable thead > tr > td.sorting_asc:before,
+    table.dataTable thead > tr > td.sorting_desc:before {
+        opacity: .6;
+    }
+
+    table.dataTable thead > tr > th.sorting_asc_disabled:before,
+    table.dataTable thead > tr > td.sorting_asc_disabled:before {
+        display: none;
+    }
+
+table.dataTable thead > tr > th:active,
+table.dataTable thead > tr > td:active {
+    outline: none;
+}
+
+table.dataTable tbody > tr > td.dataTables_empty {
+    padding: 10px;
+}
+
+div.dataTables_scrollBody > table.dataTable > thead > tr > th:before,
+div.dataTables_scrollBody > table.dataTable > thead > tr > td:before {
+    display: none;
+}

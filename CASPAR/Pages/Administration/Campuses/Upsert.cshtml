@@ -1,0 +1,28 @@
+﻿@page
+@model CASPAR.Pages.Admin.Campuses.UpsertModel
+@{
+    Layout = "_LayoutAdministration";
+    ViewData["Title"] = $"{(Model.Campus.Id == 0 ? "Create" : "Edit")} Campus";
+}
+
+<h1>@(Model.Campus.Id == 0 ? "Create" : "Edit") Campus</h1>
+
+<form method="post" class="form">
+    <fieldset class="form-fields">
+        <div class="form-group">
+            <label asp-for="Campus.CampusName"></label>
+            <input asp-for="Campus.CampusName" />
+            <span asp-validation-for="Campus.CampusName" class="text-sm text-red-600"></span>
+        </div>
+        
+    </fieldset>
+
+    <div class="form-actions">
+        @if (Model.Campus.Id != 0)
+        {
+            <input asp-for="Campus.Id" type="hidden" />
+        }
+        <a asp-area="" asp-page="Index" class="btn">Cancel</a>
+        <button type="submit" class="btn btn-success icon-check">Save</button>
+    </div>
+</form>

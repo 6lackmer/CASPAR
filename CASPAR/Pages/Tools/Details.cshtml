@@ -1,0 +1,187 @@
+﻿@page
+@model CASPAR.Pages.Tools.DetailsModel
+@{
+	Layout = "_LayoutTools";
+	ViewData["Title"] = "Semester Details";
+
+	int nextStatus = Model.SemesterInstance.SemesterInstanceStatusId + 1;
+}
+
+<a class="flex items-center gap-1" asp-area="" asp-page="./Index">
+	<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+		<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
+	</svg>
+	Back to Semesters
+</a>
+<div class="flex flex-row justify-between mb-2">
+	<h1>Semester Status Details</h1>
+</div>
+
+<ul class="w-full steps my-2">
+	@foreach (var status in Model.SemesterStatuses)
+	{
+		<li class="step @(status.Id <= Model.SemesterInstance.SemesterInstanceStatusId ? "step-primary" : "")">@status.Status</li>
+	}
+</ul>
+
+<form method="post">
+	<input type="hidden" asp-for="SemesterInstance.Id" />
+
+	@if (Model.SemesterInstance.SemesterInstanceStatusId == 1) //New
+	{
+		<div class="bg-info shadow-md rounded-xl my-8 p-4">
+			<div class="flex flex-row flex-nowrap gap-2 items-center">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+				</svg>
+				<span class="flex-grow">This semester has not been started. Change its status to <strong>@Model.SemesterStatuses.ElementAt(Model.SemesterInstance.SemesterInstanceStatusId).Status</strong> to start accepting Wishlist submissions.</span>
+
+				<input type="hidden" asp-for="SemesterStatusId" value="@nextStatus" />
+				<button type="submit" class="btn btn-sm btn-primary">Change Status</button>
+			</div>
+		</div>
+	}
+	else if (Model.SemesterInstance.SemesterInstanceStatusId == 2) //Preparing
+	{
+		<div class="bg-info shadow-md rounded-xl my-8 p-4">
+			<div class="flex flex-row flex-nowrap gap-2 items-center">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+				</svg>
+				<span class="flex-grow">This semester is accepting Wishlist submissions. To finalize Wishlists and begin <strong>@Model.SemesterStatuses.ElementAt(Model.SemesterInstance.SemesterInstanceStatusId).Status</strong>, change the semester's status.</span>
+
+				<input type="hidden" asp-for="SemesterStatusId" value="@nextStatus" />
+				<button type="submit" class="btn btn-sm btn-primary">Change Status</button>
+			</div>
+		</div>
+	}
+	else if (Model.SemesterInstance.SemesterInstanceStatusId == 3) //Scheduling
+	{
+		<div class="bg-info shadow-md rounded-xl my-8 p-4">
+			<div class="flex flex-row flex-nowrap gap-2 items-center">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+				</svg>
+				<span class="flex-grow">The schedule for this semester is being created. Once the schedule is complete, change the semester's status to <strong>@Model.SemesterStatuses.ElementAt(Model.SemesterInstance.SemesterInstanceStatusId).Status</strong> so that changes can be reviewed.</span>
+
+				<input type="hidden" asp-for="SemesterStatusId" value="@nextStatus" />
+				<button type="submit" class="btn btn-sm btn-primary">Change Status</button>
+			</div>
+		</div>
+	}
+	else if (Model.SemesterInstance.SemesterInstanceStatusId == 4) //Finalizing
+	{
+		<div class="bg-info shadow-md rounded-xl my-8 p-4">
+			<div class="flex flex-row flex-nowrap gap-2 items-center">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+				</svg>
+				<span class="flex-grow">This semester is in review. Once the schedule has been <strong>@Model.SemesterStatuses.ElementAt(Model.SemesterInstance.SemesterInstanceStatusId).Status</strong>, update its status to lock in changes.</span>
+
+				<input type="hidden" asp-for="SemesterStatusId" value="@nextStatus" />
+				<button type="submit" class="btn btn-sm btn-primary">Change Status</button>
+			</div>
+		</div>
+	}
+	else if (Model.SemesterInstance.SemesterInstanceStatusId == 5) //Approved
+	{
+		<div class="bg-info shadow-md rounded-xl my-8 p-4">
+			<div class="flex flex-row flex-nowrap gap-2 items-center">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+				</svg>
+				<span class="flex-grow">This semester is ready to be uploaded. After it has been <strong>@Model.SemesterStatuses.ElementAt(Model.SemesterInstance.SemesterInstanceStatusId).Status</strong>, update its status.</span>
+
+				<input type="hidden" asp-for="SemesterStatusId" value="@nextStatus" />
+				<button type="submit" class="btn btn-sm btn-primary">Change Status</button>
+			</div>
+		</div>
+	}
+	else //Posted
+	{
+		<div class="bg-success shadow-md rounded-xl my-8 p-4">
+			<div class="flex flex-row flex-nowrap gap-2 items-center">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+				</svg>
+				<span class="flex-grow">This semester has been posted! There's nothing else that needs to be done.</span>
+			</div>
+		</div>
+	}
+</form>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+	<div class="bg-neutral-100 rounded-xl p-4">
+		<div class="flex flex-row flex-nowrap justify-between gap-2 items-center mb-2">
+			<h3 class="text-primary">Current Semester</h3>
+			<span class="bg-secondary rounded-full px-3 py-2">@Model.SemesterInstance.Name</span>
+		</div>
+
+		<fieldset class="form-fields">
+			<div class="form-group">
+				<label>Semester Start Date</label>
+				<span class="text-neutral-500">
+					@Model.SemesterInstance.SemesterStartDate?.ToString("D")
+				</span>
+			</div>
+			<div class="form-group">
+				<label>Semester End Date</label>
+				<span class="text-neutral-500">
+					@Model.SemesterInstance.SemesterEndDate?.ToString("D")
+				</span>
+			</div>
+			<div class="form-group">
+				<label>Registration Start Date</label>
+				<span class="text-neutral-500">
+					@Model.SemesterInstance.SemesterRegistrationStart?.ToString("D")
+				</span>
+			</div>
+			<div class="form-group">
+				<label>Registration End Date</label>
+				<span class="text-neutral-500">
+					@Model.SemesterInstance.SemesterRegistrationEnd?.ToString("D")
+				</span>
+			</div>
+		</fieldset>
+	</div>
+
+	@* The semester is at the "Preparing" or later stage *@
+	@if (Model.SemesterInstance.SemesterInstanceStatusId >= 2)
+	{
+		<div class="bg-neutral-100 rounded-xl p-4">
+			<h3 class="text-primary mb-2">Wishlist Data</h3>
+
+			<fieldset class="form-fields">
+				<div class="form-group">
+					<label>Instructor Wishlist Count</label>
+					<span class="text-neutral-500">
+						@Model.InstructorWishlistCourseCount
+					</span>
+				</div>
+				<div class="form-group">
+					<label>Student Wishlist Count</label>
+					<span class="text-neutral-500">
+						@Model.StudentWishlistCourseCount
+					</span>
+				</div>
+			</fieldset>
+		</div>
+	}
+
+	@* The semester is at the "Finalizing" or later stage *@
+	@if (Model.SemesterInstance.SemesterInstanceStatusId >= 3)
+	{
+		<div class="bg-neutral-100 rounded-xl p-4">
+			<h3 class="text-primary mb-2">Schedule Data</h3>
+
+			<fieldset class="form-fields">
+				<div class="form-group">
+					<label>Scheduled Section Count</label>
+					<span class="text-neutral-500">
+						@Model.SectionCount
+					</span>
+				</div>
+			</fieldset>
+		</div>
+	}
+</div>

@@ -1,0 +1,391 @@
+﻿@page "/Schedule/Builder/{id:int}"
+
+@using CASPAR.ViewModels;
+@using DataAccess;
+@using Infrastructure.Interfaces;
+@using Infrastructure.Models;
+@using Microsoft.EntityFrameworkCore;
+
+@namespace CASPAR.Pages.Schedule.Builder
+
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject IJSRuntime JsRuntime
+
+<CascadingValue Value="@Id" Name="SemesterInstanceId" IsFixed="true">
+    @if (Ready)
+    {
+        <div class="inline-block">
+            <a class="flex items-center gap-1 mx-6 mt-4" href="/Schedule">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
+                </svg>
+                Back to Schedules
+            </a>
+        </div>
+
+        @if (SemesterInstance == null || SemesterInstance.SemesterInstanceStatusId != 3)
+        {
+            <p>Cannot build a schedule for the selected semester.</p>
+        }
+        else
+        {
+            <div class="p-6 pt-0 flex flex-row no-wrap gap-6">
+                <LoadWidget 
+                    CreditHours="CreditHours"
+                    AssignedCreditHours="AssignedCreditHours"
+                    SelectedInstructorId="SelectedInstructorId"
+                    InstructorSchedules="InstructorSchedules"
+                    OnSelectInstructor="SelectInstructor"
+                    OnSelectCourse="SelectCourse" 
+                />
+
+                <CourseList 
+                    SelectedCourseId="SelectedCourseId"
+                    FilterUnassignedSections="FilterUnassignedSections"
+                    OnSelectCourse="SelectCourse"
+                    OnChangesSavedCallback="OnChangesSaved" 
+                    OnSelectInstructor="SelectInstructor"
+                    OnToggleFilter="ToggleFilter"
+                />
+
+                <WishlistWidget 
+                    SelectedCourseId="SelectedCourseId"
+                    Sections="CourseSections"
+                    InstructorSchedules="InstructorSchedules"
+                    WishlistSummaries="WishlistSummaries"
+                    AllInstructorWishlists="AllInstructorWishlists"
+                    RemainingInstructorWishlists="RemainingInstructorWishlists"
+                    OnSelectInstructor="SelectInstructor" 
+                />
+
+            </div>
+        }
+    }
+    else
+    {
+        <span class="loader"></span>
+    }
+</CascadingValue>
+
+@code {
+
+    public enum SortOrder { Ascending, Descending };
+
+    [Parameter]
+    public int Id { get; set; }
+
+    public SemesterInstance SemesterInstance { get; set; } = new();
+
+    public bool FilterUnassignedSections { get; set; }
+
+    public int? SelectedCourseId { get; set; }
+
+    //these are the sections for the selected course
+    public IEnumerable<Section> CourseSections { get; set; } = new List<Section>();
+
+    public int? SelectedInstructorId { get; set; }
+
+    public IEnumerable<InstructorSchedules> InstructorSchedules { get; set; } = new List<InstructorSchedules>();
+
+    public IEnumerable<WishlistSummary> WishlistSummaries { get; set; } = new List<WishlistSummary>();
+
+    public IEnumerable<InstructorWishlistCourse> RemainingInstructorWishlists { get; set; } = new List<InstructorWishlistCourse>();
+
+    public IEnumerable<InstructorWishlistCourse> AllInstructorWishlists { get; set; } = new List<InstructorWishlistCourse>();
+
+    public int CreditHours { get; set; } = 1;
+
+    public int AssignedCreditHours { get; set; } = 1;
+
+    public bool Ready { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Ready = false;
+
+        using var context = DbFactory.CreateDbContext();
+
+        SemesterInstance = await context.SemesterInstances.FirstAsync(s => s.Id == Id);
+
+        await UpdateLoadData();
+
+        Ready = true;
+    }
+
+    private async Task OnChangesSaved()
+    {
+        await UpdateLoadData();
+        await UpdateWishlistData();
+    }
+
+    private async Task SelectInstructor(int? instructorId)
+    {
+        if (SelectedInstructorId == null || SelectedInstructorId != instructorId)
+        {
+            SelectedInstructorId = instructorId;
+        }
+        //uncomment this to allow unselecting an instructor by selecting them again
+        // else if (SelectedInstructorId == instructorId)
+        // {
+        //     SelectedInstructorId = null;
+        // }
+
+        //move this into the if-statement if the else-if is uncommented
+        await JsRuntime.InvokeVoidAsync("scrollToElementId", $"instructor{instructorId}");
+    }
+
+    private async Task SelectCourse(int? courseId)
+    {
+        if (SelectedCourseId == null || SelectedCourseId != courseId)
+        {
+            SelectedCourseId = courseId;
+
+            await UpdateWishlistData();
+        }
+        //uncomment this to allow unselecting a course by selecting it again
+        // else if (SelectedCourseId == courseId)
+        // {
+        //     SelectedCourseId = null;
+        // }
+
+        //move this into the if-statement if the else-if is uncommented
+        await JsRuntime.InvokeVoidAsync("scrollToElementId", $"scheduleCourse{courseId}");
+    }
+
+    private void ToggleFilter()
+    {
+        FilterUnassignedSections = !FilterUnassignedSections;
+    }
+
+    private async Task UpdateLoadData()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        CreditHours = await context.Sections.Where(t => t.SemesterInstanceId == SemesterInstance.Id).Include("Course").Select(t => t.Course.CreditHours).SumAsync();
+
+        AssignedCreditHours = await context.Sections
+        .Where(t =>
+            t.SemesterInstanceId == SemesterInstance.Id &&
+            t.InstructorId != null &&
+            t.ModalityId != null &&
+            t.PartOfTermId != null &&
+            (!t.Modality.HasCampuses || (t.Modality.HasCampuses && t.ClassroomId != null)) &&
+            (!t.Modality.HasTimeBlocks || (t.Modality.HasTimeBlocks && t.DaysOfWeek != string.Empty && t.SectionTime != null)) &&
+            (t.SectionPays != null && t.SectionPays.Count > 0)
+        )
+        .Include("Course")
+        .Select(t => t.Course.CreditHours)
+        .SumAsync();
+
+        var instructors = await context.Instructors.Include("ApplicationUser").OrderBy(t => t.ApplicationUser.LastName).ToListAsync();
+
+        var instructorSchedules = new List<InstructorSchedules>();
+
+        foreach (var instructor in instructors)
+        {
+            var sections = await context.Sections
+            .Where(t => t.SemesterInstanceId == SemesterInstance.Id && t.InstructorId == instructor.Id)
+            .OrderBy(t => t.Course.Id).Include("Course")
+            .Include("Course.Program")
+            .Include("Modality")
+            .Include("SectionPays")
+            .ToListAsync();
+
+            var loadResult = await context.LoadRequirements
+            .Where(t => t.SemesterInstanceId == SemesterInstance.Id && t.InstructorId == instructor.Id)
+            .FirstOrDefaultAsync();
+
+            var load = loadResult?.LoadReqHours ?? 0;
+
+            var releaseResult = await context.ReleaseTimes
+            .Where(t => t.SemesterInstanceId == SemesterInstance.Id && t.InstructorId == instructor.Id)
+            .ToListAsync();
+
+            var release = releaseResult?.Select(r => r.ReleaseTimeAmount).Sum() ?? 0;
+
+            instructorSchedules.Add(new InstructorSchedules
+                {
+                    InstructorId = instructor.Id,
+                    Instructor = instructor,
+                    Load = load,
+                    ReleaseTime = release,
+                    Credits = sections.Select(t => t.SectionPays?.Select(s => s.CreditHours).Sum() ?? 0.0m).Sum(),
+                    Sections = sections,
+                    ReleaseTimes = releaseResult ?? new List<ReleaseTime>(),
+                });
+        }
+
+        InstructorSchedules = instructorSchedules;
+    }
+
+    public async Task UpdateWishlistData()
+    {
+        if (SelectedCourseId != null)
+        {
+            using var context = DbFactory.CreateDbContext();
+
+            /*
+             * How to summarize and filter Student Wishlists
+             * 
+             * A student wishlist has the following form:
+             * 
+             * [Semester Instance]   [Course]  [Modalities]  [Campuses]    [Time Blocks]
+             * 
+             * An example of a wishlist looks like:
+             * 
+             * Spring 2024           CS 1400   Online        Ogden         Morning
+             *                                 Face-to-face  Davis         Evening
+             *                                 Virtual
+             * 
+             * Students are not given granular control of wishlist requests, so we treat this as a request for any of the
+             * following combinations:
+             * 
+             * Spring 2024           CS 1400   Online
+             * Spring 2024           CS 1400   Face-to-face  Ogden         Morning
+             * Spring 2024           CS 1400   Face-to-face  Ogden         Evening
+             * Spring 2024           CS 1400   Face-to-face  Davis         Morning
+             * Spring 2024           CS 1400   Face-to-face  Davis         Evening
+             * Spring 2024           CS 1400   Virtual                     Morning
+             * Spring 2024           CS 1400   Virtual                     Evening
+             * 
+             * A section that includes any one of these combinations will satisfy this student's wishlist for this course.
+             * 
+             * Since it is easy to meet less specific requirements (such as online modalities), care must be taken to schedule
+             * sections with more specific requirements first, and then sections without campuses or time blocks afterwards.
+             */
+
+            //get all of the sections for the specified semester and course
+            CourseSections = await context.Sections.Where(s => s.SemesterInstanceId == SemesterInstance.Id && s.CourseId == SelectedCourseId && s.Modality != null)
+                .Include("Modality")
+                .Include("Classroom.Building.Campus")
+                .ToListAsync();
+
+            //get all of the student wishlists for the specified semester and course
+            var studentWishlists = await context.StudentWishlistCourses
+                .Include("Modalities")
+                .Include("Campuses")
+                .Include("TimeBlocks")
+                .Where(w =>
+                    w.CourseId == SelectedCourseId && w.StudentWishlist.SemesterInstanceId == SemesterInstance.Id
+                )
+                .ToListAsync();
+
+            //filter out any wishlists that are fulfilled by existing sections
+            var fulfilledStudentWishlists = new List<StudentWishlistCourse>();
+
+            foreach (var section in CourseSections)
+            {
+                if (section.Modality != null)
+                {
+                    if (section.Modality.HasCampuses && section.Modality.HasTimeBlocks)
+                    {
+                        fulfilledStudentWishlists.AddRange(
+                            studentWishlists.Where(w =>
+                                (w.Modalities != null && w.Modalities.Contains(section.Modality)) &&
+                                (w.Campuses == null || w.Campuses.Count == 0 || (section.ClassroomId != null && w.Campuses.Contains(section.Classroom.Building.Campus))) &&
+                                (w.TimeBlocks == null || w.TimeBlocks.Count == 0 || (w.TimeBlocks.Any(t => section.SectionTime?.StartTime >= t.StartTime && section.SectionTime?.StartTime <= t.EndTime)))
+                            )
+                        );
+                    }
+                    else if (section.Modality.HasTimeBlocks)
+                    {
+                        fulfilledStudentWishlists.AddRange(
+                            studentWishlists.Where(w =>
+                                (w.Modalities != null && w.Modalities.Contains(section.Modality)) &&
+                                (w.TimeBlocks == null || w.TimeBlocks.Count == 0 || (w.TimeBlocks.Any(t => section.SectionTime?.StartTime >= t.StartTime && section.SectionTime?.StartTime <= t.EndTime)))
+                            )
+                        );
+                    }
+                    else
+                    {
+                        fulfilledStudentWishlists.AddRange(
+                            studentWishlists.Where(w =>
+                                (w.Modalities != null && w.Modalities.Contains(section.Modality))
+                            )
+                        );
+                    }
+                }
+            }
+
+            //remove the fulfilled student wishlists
+            studentWishlists.RemoveAll(w => fulfilledStudentWishlists.Contains(w));
+
+            //expand the wishlists into wishlist summary objects
+            var wishlistSummaries = new List<WishlistSummary>();
+
+            wishlistSummaries.AddRange(
+                studentWishlists
+                    .SelectMany(t => t.Modalities.Where(m => m.HasCampuses && m.HasTimeBlocks), (t, modality) => new { t, modality })
+                    .SelectMany(u => u.t.Campuses, (u, campus) => new { u, campus })
+                    .SelectMany(v => v.u.t.TimeBlocks, (v, timeBlock) => new WishlistSummary
+                        {
+                            Id = v.u.t.Id,
+                            Modality = v.u.modality,
+                            Campus = v.campus,
+                            TimeBlock = timeBlock,
+                            Count = 1,
+                        })
+                    .ToList()
+            );
+
+            wishlistSummaries.AddRange(
+                studentWishlists
+                    .SelectMany(t => t.Modalities.Where(m => !m.HasCampuses && m.HasTimeBlocks), (t, modality) => new { t, modality })
+                    .SelectMany(u => u.t.TimeBlocks, (u, timeBlock) => new WishlistSummary
+                        {
+                            Id = u.t.Id,
+                            Modality = u.modality,
+                            TimeBlock = timeBlock,
+                            Count = 1,
+                        })
+                    .ToList()
+            );
+
+            wishlistSummaries.AddRange(
+                studentWishlists
+                    .SelectMany(t => t.Modalities.Where(m => !m.HasCampuses && !m.HasTimeBlocks), (t, modality) => new WishlistSummary
+                        {
+                            Id = t.Id,
+                            Modality = modality,
+                            Count = 1,
+                        })
+                    .ToList()
+            );
+
+            //count up the different summaries
+            WishlistSummaries = wishlistSummaries
+            .GroupBy(t => new { t.Modality, t.Campus, t.TimeBlock })
+            .Select(t => new WishlistSummary
+                {
+                    Modality = t.Key.Modality,
+                    Campus = t.Key.Campus,
+                    TimeBlock = t.Key.TimeBlock,
+                    Count = t.Sum(u => u.Count),
+                })
+            .OrderBy(t => t.Modality)
+            .ThenBy(t => t.Campus)
+            .ThenBy(t => t.TimeBlock)
+            .ToList();
+
+            //get instructor wishlists
+            AllInstructorWishlists = await context.InstructorWishlistCourses
+                .Where(t =>
+                    t.InstructorWishlist != null && 
+                    t.InstructorWishlist.SemesterInstanceId == SemesterInstance.Id &&
+                    t.CourseId == SelectedCourseId
+                )
+                .Include("InstructorWishlist")
+                .Include("InstructorWishlist.Instructor.ApplicationUser")
+                .Include("Modalities")
+                .Include("Campuses")
+                .Include("TimeBlocks")
+                .OrderBy(t => t.Ranking)
+                .ThenBy(t => t.InstructorWishlist.Instructor.ApplicationUser.LastName)
+                .ToListAsync();
+
+            //filter wishlists that have not been fulfilled
+            RemainingInstructorWishlists = AllInstructorWishlists.Where(t => !CourseSections.Select(t => t.InstructorId).Contains(t.InstructorWishlist.InstructorId));
+
+        }
+    }
+}

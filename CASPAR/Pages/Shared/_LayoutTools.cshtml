@@ -1,0 +1,33 @@
+﻿@{
+    Layout = "_Layout";
+}
+
+<div class="flex flex-row flex-nowrap gap-8">
+    <partial name="_NavbarToolsPartial" />
+    <div class="grow">
+        @RenderBody()
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="~/js/dataTables.tailwindcss.js"></script>
+<script>
+    $('#dataTable').dataTable({
+        'dom':
+            "<'grid grid-cols-1'" +
+            "<'self-center place-self-end'f>" +
+            "<'my-2 col-span-2 border border-neutral-200 rounded-lg min-w-full bg-white dark:bg-neutral-800 dark:border-neutral-700'tr>" +
+            ">" +
+            "<'grid grid-cols-1 md:grid-cols-3'" +
+            "<'self-center'l>" +
+            "<'self-center'i>" +
+            "<'self-center place-self-end'p>" +
+            ">",
+        'lengthMenu': [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        'pageLength': 10,
+        'pagingType': 'numbers',
+    });
+</script>
+
+@await RenderSectionAsync("Scripts", required: false)

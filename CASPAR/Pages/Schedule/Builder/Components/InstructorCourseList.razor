@@ -1,0 +1,55 @@
+﻿@using DataAccess;
+@using Infrastructure.Interfaces;
+@using Infrastructure.Models;
+@using Microsoft.EntityFrameworkCore;
+
+@namespace CASPAR.Pages.Schedule.Builder
+
+@{
+    int i = 1;
+}
+
+@if(Sections.Count() > 0)
+{
+    <div class="ml-2 mt-2 text-neutral-600 text-xs font-bold">Sections</div>
+    <div class="text-neutral-600 border-l-4 border-neutral-400/50 m-2">
+        @foreach (var sectionCourse in Sections)
+        {
+            <button class="w-full" type="button" @onclick=@(e => OnSelectCourse.InvokeAsync(sectionCourse.CourseId))>
+                <div class="instructor-load hover:bg-neutral-400/25 px-2 py-1">
+                    <span class="text-xs">@(i++)</span>
+                    <span>@sectionCourse.Course?.Program?.ProgramCode @sectionCourse.Course?.CourseNumber</span>
+                    <span>@sectionCourse.Modality?.ModalityName</span>
+                    <span>@sectionCourse.SectionPays?.Select(s => s.CreditHours).Sum()</span>
+                </div>
+            </button>
+        }
+    </div>
+}
+
+@if (ReleaseTimes.Count() > 0)
+{
+    <div class="ml-2 text-neutral-600 text-xs font-bold">Release Time</div>
+    <div class="text-neutral-600 border-l-4 border-neutral-400/50 m-2">
+        @foreach (var releaseTime in ReleaseTimes)
+        {
+            <div class="instructor-load hover:bg-neutral-400/25 px-2 py-1">
+                <span class="col-span-3">@releaseTime.ReleaseTimeNotes</span>
+                <span class="text-center">@releaseTime.ReleaseTimeAmount</span>
+            </div>
+        }
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public IEnumerable<Section> Sections { get; set; } = new List<Section>();
+
+    [Parameter]
+    public IEnumerable<ReleaseTime> ReleaseTimes { get; set; } = new List<ReleaseTime>();
+
+    [Parameter]
+    public EventCallback<int?> OnSelectCourse { get; set; }
+
+}

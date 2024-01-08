@@ -1,0 +1,163 @@
+﻿@using CASPAR.ViewModels
+@using DataAccess;
+@using Infrastructure.Models;
+@using Microsoft.EntityFrameworkCore;
+
+@namespace CASPAR.Pages.Schedule.Builder
+
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject IJSRuntime JsRuntime
+
+@{
+    int i = 1;
+}
+
+<div class="flex flex-col border-l-4 bg-neutral-50 border-neutral-300 mx-4">
+    @foreach (var courseSection in ScheduleSections)
+    {
+        if (!FilterUnassignedSections || (FilterUnassignedSections && !courseSection.Assigned))
+        {
+            <div class="group flex gap-1 odd:bg-neutral-100 even:bg-neutral-50 hover:bg-neutral-200/50 p-2">
+                @if (SelectedSectionId == courseSection.Section.Id)
+                {
+                    <button @onclick="@(e => UnselectSection())" type="button" class="h-fit flex gap-1">
+                        <img class="h-5 w-5" src="/img/chevron-down.svg" />
+                        <span class="text-sm font-bold">@(i++)</span>
+                    </button>
+                }
+                else
+                {
+                    <button @onclick="@(e => SelectSection(courseSection.Section.Id))" type="button" class="h-fit flex gap-1">
+                        <img class="h-5 w-5" src="/img/chevron-right.svg" />
+                        <span class="text-sm font-bold">@(i++)</span>
+                    </button>
+                }
+                @if (SelectedSectionId == courseSection.Section.Id)
+                {
+                    <UpdateSection SectionId="courseSection.Section.Id" OnChangesSavedCallback="OnSectionUpdated" OnCancelCallback="@(e => UnselectSection())" />
+                }
+                else
+                {
+                    <SectionDetails Section="courseSection.Section" OnSelectInstructor="OnSelectInstructor" />
+                    <div class="flex items-center gap-2 invisible group-hover:visible self-center">
+                        <button @onclick="@(e => SelectSection(courseSection.Section.Id))" type="button" class="text-neutral-700 hover:text-success">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                <path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z"></path>
+                                <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z"></path>
+                            </svg>
+                        </button>
+                        <RemoveSection SectionId="courseSection.Section.Id" OnChangesSavedCallback="OnChangesSaved" />
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+<AddSection CourseId="CourseId" OnSectionAddedCallback="OnSectionAdded" />
+
+@code {
+
+    [CascadingParameter(Name = "SemesterInstanceId")]
+    public int SemesterInstanceId { get; set; }
+
+    [Parameter]
+    public int? CourseId { get; set; }
+
+    [Parameter]
+    public bool FilterUnassignedSections { get; set; }
+
+    [Parameter]
+    public EventCallback OnChangesSavedCallback { get; set; }
+
+    [Parameter]
+    public EventCallback<int?> OnSelectInstructor { get; set; }
+
+    public IEnumerable<ScheduleSection> ScheduleSections { get; set; } = new List<ScheduleSection>();
+
+    public int? SelectedSectionId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateData();
+    }
+
+    private async Task UpdateData()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        if (CourseId != null)
+        {
+            var scheduleSections = new List<ScheduleSection>();
+
+            var sections = await context.Sections
+            .Where(s => s.SemesterInstanceId == SemesterInstanceId && s.CourseId == CourseId)
+            .Include("Course")
+            .Include("Instructor.ApplicationUser")
+            .Include("Modality")
+            .Include("Classroom.Building.Campus")
+            .Include("PartOfTerm")
+            .Include("SectionPays")
+            .Include("SectionPays.PayModel")
+            .Include("SectionPays.PayOrg")
+            .Include("SectionTime")
+            .ToListAsync();
+
+            foreach (var section in sections)
+            {
+                scheduleSections.Add(new ScheduleSection
+                {
+                    Section = section,
+                    Assigned = await GetSectionAssigned(section),
+                });
+            }
+
+            ScheduleSections = scheduleSections;
+        }
+    }
+
+    public async Task OnSectionAdded(int sectionId)
+    {
+        SelectSection(sectionId);
+
+        await OnChangesSaved();
+    }
+
+    private async Task OnSectionUpdated()
+    {
+        UnselectSection();
+
+        await OnChangesSaved();
+    }
+
+    private async Task OnChangesSaved()
+    {
+        await UpdateData();
+
+        await OnChangesSavedCallback.InvokeAsync();
+    }
+
+    public void SelectSection(int sectionId)
+    {
+        SelectedSectionId = sectionId;
+    }
+
+    private void UnselectSection()
+    {
+        SelectedSectionId = null;
+    }
+
+    private async Task<bool> GetSectionAssigned(Section section)
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        return await context.Sections.Where(s => s.Id == section.Id &&
+            s.InstructorId != null &&
+            s.ModalityId != null &&
+            s.PartOfTermId != null &&
+            (!s.Modality.HasCampuses || (s.Modality.HasCampuses && s.ClassroomId != null)) &&
+            (!s.Modality.HasTimeBlocks || (s.Modality.HasTimeBlocks && s.DaysOfWeek != string.Empty && s.SectionTime != null)) &&
+            (s.SectionPays != null && s.SectionPays.Count > 0)
+        ).FirstOrDefaultAsync() != null;
+    }
+}

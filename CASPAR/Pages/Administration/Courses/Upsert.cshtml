@@ -1,0 +1,52 @@
+﻿@page
+@model CASPAR.Pages.Admin.Courses.UpsertModel
+@{
+    Layout = "_LayoutAdministration";
+    ViewData["Title"] = $"{(Model.Course.Id == 0 ? "Create" : "Edit")} Course";
+}
+
+<h1>@(Model.Course.Id == 0 ? "Create" : "Edit") Course</h1>
+
+<form method="post" class="form">
+    <fieldset class="form-fields">
+        <div class="form-group">
+            <label class="ms-2">Category</label>
+            @Html.DropDownListFor(t =>
+            t.Course.ProgramId,
+            Model.Programs,
+            "",
+            new { @class = "" }
+            )
+            <span asp-validation-for="Course.ProgramId" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Course.CourseNumber"></label>
+            <input asp-for="Course.CourseNumber" />
+            <span asp-validation-for="Course.CourseNumber" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Course.CourseTitle"></label>
+            <input asp-for="Course.CourseTitle" />
+            <span asp-validation-for="Course.CourseTitle" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Course.CreditHours"></label>
+            <input asp-for="Course.CreditHours" />
+            <span asp-validation-for="Course.CreditHours" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Course.CourseDescription"></label>
+            <textarea asp-for="Course.CourseDescription"></textarea>
+            <span asp-validation-for="Course.CourseDescription" class="text-sm text-red-600"></span>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        @if (Model.Course.Id != 0)
+        {
+            <input asp-for="Course.Id" type="hidden" />
+        }
+        <a asp-area="" asp-page="Index" class="btn">Cancel</a>
+        <button type="submit" class="btn btn-success icon-check">Save</button>
+    </div>
+</form>

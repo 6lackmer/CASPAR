@@ -1,0 +1,109 @@
+﻿@page
+@model IndexModel
+
+@{
+    Layout = "_LayoutFullWidth";
+    ViewData["Title"] = "Student-driven scheduling";
+}
+
+<div class="hero wave-background">
+    <div class="hero-overlay bg-opacity-30"></div>
+    <div class="hero-content text-neutral-content">
+        <div class="mx-2 my-8 lg:my-24 2xl:my-36 max-w-md lg:max-w-xl text-base-100">
+            <h1 class="mb-5 text-5xl lg:text-6xl font-bold">
+                Student-Powered Course Scheduling
+            </h1>
+            <!-- <h1 class="mb-5 text-6xl font-bold">Give yourself the gift of a perfect schedule</h1> -->
+            <p class="text-base lg:text-lg text-base-200 pb-6">
+                With CASPAR's wishlist-driven scheduling, we can collect better data 
+                to get you the classes you want, when and where you want them.
+            </p>
+
+            @* these have to go here or they mess up the layout *@
+            ﻿@using Microsoft.AspNetCore.Identity
+            @using Infrastructure.Models
+            @using Utility
+
+            @inject SignInManager<ApplicationUser> SignInManager
+            @inject UserManager<ApplicationUser> UserManager
+
+            @if (SignInManager.IsSignedIn(User))
+            {
+                if (User.IsInRole(SD.StudentRole))
+                {
+                    <a class="btn btn-secondary" asp-area="" asp-page="/Student/Wishlist/Index">Make your wishlist</a>
+                }
+                else if (User.IsInRole(SD.InstructorRole))
+                {
+                    <a class="btn btn-secondary" asp-area="" asp-page="/Instructor/Wishlist/Index">Make your wishlist</a>
+                }
+            }
+            else
+            {
+                <a class="btn btn-secondary" asp-area="" asp-page="/Student/Wishlist/Index">Make your wishlist</a>
+            }
+        </div>
+    </div>
+</div>
+
+<section class="my-8">
+    <div class=" flex flex-col items-center mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div class="w-full my-4">
+            <h1 class="mb-8 text-4xl font-bold text-neutral-700 md:text-7xl lg:text-5xl">C.A.S.P.A.R.</h1>
+        </div>
+        <div class="block rounded-lg bg-white shadow-2xl">
+            <div class="relative overflow-hidden bg-cover bg-no-repeat">
+                <img class="rounded-lg"
+                     src="~/img/home/wsu-banner.png"
+                     alt="" />
+            </div>
+            <div class="p-6">
+                
+                <h2>
+                    A Weber State University Project
+                </h2>
+                <p>Created by students for the students. Help us help you get your perfect schedule and create your course wishlist today!</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="my-24">
+    @* Course Administration and Schedule Planner for Academic Registration *@
+    <div class=" flex flex-col items-center px-5 mt-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div class="flex flex-col w-full max-w-3xl mx-auto prose text-left prose-blue">
+            <div class="w-full mx-auto text-center grid gap-6 caspar-icons ">
+                <div style="display: flex; flex-direction: column; align-items:center; justify-content: center;">
+                    <img src="~/img/home/C.png" width="80" height="80" style="margin:auto;" />
+                    <p>Course</p>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items:center; justify-content: center;">
+                    <img src="~/img/home/A.png" width="80" height="80" style="margin:auto;" />
+                    <p>Administration</p>
+                </div>
+                <div style="display: flex; align-items:center; justify-content: center;">
+                    <p>and</p>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items:center; justify-content: center;">
+                    <img src="~/img/home/S.png" width="80" height="80" style="margin:auto;" />
+                    <p>Schedule</p>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items:center; justify-content: center;">
+                    <img src="~/img/home/P.png" width="80" height="80" style="margin:auto;" />
+                    <p>Planner</p>
+                </div>
+                <div style="display: flex; align-items:center; justify-content: center;">
+                    <p>for</p>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items:center; justify-content: center;">
+                    <img src="~/img/home/A.png" width="80" height="80" style="margin:auto;" />
+                    <p>Academic</p>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items:center; justify-content: center;">
+                    <img src="~/img/home/R.png" width="80" height="80" style="margin:auto;" />
+                    <p>Registration</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

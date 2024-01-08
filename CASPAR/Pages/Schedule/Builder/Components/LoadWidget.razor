@@ -1,0 +1,151 @@
+﻿@using CASPAR.ViewModels;
+@using DataAccess;
+@using Infrastructure.Interfaces;
+@using Infrastructure.Models;
+@using Microsoft.EntityFrameworkCore;
+
+@namespace CASPAR.Pages.Schedule.Builder
+
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+
+<div class="hidden xl:block relative">
+    <div class="sticky top-0">
+        <div class="h-screen pt-6 pb-4">
+            <div class="h-full overflow-y-auto overscroll-contain w-72 text-sm bg-neutral-200 rounded-xl p-2">
+                <div class="flex flex-col gap-2 mb-8">
+                    <div class="flex items-center justify-between gap-2 text-neutral-800 mx-3">
+                        <span class="text-base font-bold">Scheduled Credit Hours</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                             class="w-5 h-5">
+                            <path d="M15.5 2A1.5 1.5 0 0014 3.5v13a1.5 1.5 0 001.5 1.5h1a1.5 1.5 0 001.5-1.5v-13A1.5 1.5 0 0016.5 2h-1zM9.5 6A1.5 1.5 0 008 7.5v9A1.5 1.5 0 009.5 18h1a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0010.5 6h-1zM3.5 10A1.5 1.5 0 002 11.5v5A1.5 1.5 0 003.5 18h1A1.5 1.5 0 006 16.5v-5A1.5 1.5 0 004.5 10h-1z" />
+                        </svg>
+                    </div>
+                    <div class="instructor-load p-2 rounded-xl">
+                        <span></span>
+                        <div class="flex flex-row gap-2">
+                            <span>Assigned</span>
+                        </div>
+                        <div class="relative flex items-center rounded-full overflow-hidden">
+                            <div class="absolute w-full text-center text-xs text-neutral-50">
+                                @AssignedCreditHours / @CreditHours
+                            </div>
+                            <div class="w-full bg-neutral-700">
+                                <div class="bg-purple-600 font-medium text-purple-100 text-center h-full"
+                                     style="width: @(CreditHours > 0 ? 100 * AssignedCreditHours / CreditHours : 0)%">
+                                    &nbsp;
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-green-600">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1 mb-8">
+                    <div class="flex items-center justify-between gap-2 text-neutral-800 mx-3">
+                        <button class="flex items-center justify-between gap-2 text-base font-bold w-full" type="button" @onclick="@(e => SortByLoad())">
+                            Instructor Load
+                            @if (SortOrder != null)
+                            {
+                                if (SortOrder == Index.SortOrder.Ascending)
+                                {
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                        <path fill-rule="evenodd" d="M14.77 12.79a.75.75 0 01-1.06-.02L10 8.832 6.29 12.77a.75.75 0 11-1.08-1.04l4.25-4.5a.75.75 0 011.08 0l4.25 4.5a.75.75 0 01-.02 1.06z" clip-rule="evenodd" />
+                                    </svg>
+                                }
+                                else if (SortOrder == Index.SortOrder.Descending)
+                                {
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                    </svg>
+                                }
+                            }
+                        </button>
+                        
+                            @if (SortOrder == null)
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                    <path d="M15.5 2A1.5 1.5 0 0014 3.5v13a1.5 1.5 0 001.5 1.5h1a1.5 1.5 0 001.5-1.5v-13A1.5 1.5 0 0016.5 2h-1zM9.5 6A1.5 1.5 0 008 7.5v9A1.5 1.5 0 009.5 18h1a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0010.5 6h-1zM3.5 10A1.5 1.5 0 002 11.5v5A1.5 1.5 0 003.5 18h1A1.5 1.5 0 006 16.5v-5A1.5 1.5 0 004.5 10h-1z" />
+                                </svg>
+                            }
+                            else
+                            {
+                                <button type="button" @onclick="@(e => SortByName())">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                        <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                                    </svg>
+                                </button>
+                            }
+                    </div>
+
+                    <InstructorList 
+                        SelectedInstructorId="SelectedInstructorId"
+                        InstructorSchedules="InstructorSchedules"
+                        OnSelectInstructor="OnSelectInstructor"
+                        OnSelectCourse="OnSelectCourse"
+                    />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+    [Parameter]
+    public int CreditHours { get; set; }
+
+    [Parameter]
+    public int AssignedCreditHours { get; set; }
+
+    [Parameter]
+    public int? SelectedInstructorId { get; set; }
+
+    [Parameter]
+    public IEnumerable<InstructorSchedules> InstructorSchedules { get; set; } = new List<InstructorSchedules>();
+
+    [Parameter]
+    public EventCallback<int?> OnSelectInstructor { get; set; }
+
+    [Parameter]
+    public EventCallback<int?> OnSelectCourse { get; set; }
+
+    public Index.SortOrder? SortOrder { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (SortOrder != null)
+        {
+            if (SortOrder == Index.SortOrder.Ascending)
+            {
+                InstructorSchedules = InstructorSchedules.OrderBy(t => t.Credits + t.ReleaseTime);
+            }
+            else
+            {
+                InstructorSchedules = InstructorSchedules.OrderByDescending(t => t.Credits + t.ReleaseTime);
+            }
+        }
+    }
+
+    private void SortByName()
+    {
+        InstructorSchedules = InstructorSchedules.OrderBy(t => t.Instructor?.ApplicationUser?.LastName);
+        SortOrder = null;
+    }
+
+    private void SortByLoad()
+    {
+        if (SortOrder == null || SortOrder == Index.SortOrder.Descending)
+        {
+            InstructorSchedules = InstructorSchedules.OrderBy(t => t.Credits + t.ReleaseTime);
+            SortOrder = Index.SortOrder.Ascending;
+        }
+        else
+        {
+            InstructorSchedules = InstructorSchedules.OrderByDescending(t => t.Credits + t.ReleaseTime);
+            SortOrder = Index.SortOrder.Descending;
+        }
+    }
+
+}

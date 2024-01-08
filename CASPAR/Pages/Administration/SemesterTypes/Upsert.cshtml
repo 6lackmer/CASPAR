@@ -1,0 +1,28 @@
+﻿@page
+@model CASPAR.Pages.Admin.SemesterTypes.UpsertModel
+@{
+    Layout = "_LayoutAdministration";
+    ViewData["Title"] = $"{(Model.Semester.Id == 0 ? "Create" : "Edit")} Semester Type";
+}
+
+<h1>@(Model.Semester.Id == 0 ? "Create" : "Edit") Semester Type</h1>
+
+<form method="post" class="form">
+    <fieldset class="form-fields">
+        <div class="form-group">
+            <label asp-for="Semester.SemesterName"></label>
+            <input asp-for="Semester.SemesterName" />
+            <span asp-validation-for="Semester.SemesterName" class="text-sm text-red-600"></span>
+        </div>
+
+    </fieldset>
+
+    <div class="form-actions">
+        @if (Model.Semester.Id != 0)
+        {
+            <input asp-for="Semester.Id" type="hidden" />
+        }
+        <a asp-area="" asp-page="Index" class="btn">Cancel</a>
+        <button type="submit" class="btn btn-success icon-check">Save</button>
+    </div>
+</form>

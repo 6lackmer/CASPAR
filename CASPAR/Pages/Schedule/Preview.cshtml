@@ -1,0 +1,312 @@
+﻿@page
+@using Infrastructure.Models;
+@using Utility;
+@model CASPAR.Pages.Schedule.PreviewModel
+@{
+    Layout = "_LayoutFullWidth";
+    ViewData["Title"] = "Preview Schedule";
+}
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<div class="p-6">
+    @if (Model.ReturnRoute == "index")
+    {
+        <a class="flex items-center gap-1" asp-area="" asp-page="./Index">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
+            </svg>
+            Back to Schedules
+        </a>
+    }
+    else if (Model.ReturnRoute == "builder")
+    {
+        <a class="flex items-center gap-1" href="/Schedule/Builder/@Model.SemesterInstance.Id">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
+            </svg>
+            Back to Builder
+        </a>
+    }
+
+    <div class="flex flex-row justify-between mb-2">
+        <h1>Preview Schedule: @Model.SemesterInstance.Name</h1>
+        @if (Model.SemesterInstance.SemesterInstanceStatus?.Status == "Scheduling" && SignInManager.IsSignedIn(User) && (User.IsInRole(SD.ProgramCoordinatorRole) || User.IsInRole(SD.FlexCoordinatorRole) || User.IsInRole(SD.GraduateCoordinatorRole)))
+        {
+            if (Model.AllSectionsAssigned)
+            {
+                <a class="btn btn-success" asp-area="" asp-page="./Submit" asp-route-id="@Model.SemesterInstance.Id" asp-route-returnRoute="@Model.ReturnRoute">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                    Submit Schedule
+                </a>
+            }
+            else
+            {
+                <button class="btn btn-success" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                    Submit Schedule
+                </button>
+            }
+        }
+        else
+        {
+            <form method="post">
+                <button type="submit" class="btn btn-primary">Download CSV</button>
+            </form>
+        }
+    </div>
+
+    @if (Model.SemesterInstance.SemesterInstanceStatus?.Status == "Scheduling" && !Model.AllSectionsAssigned && SignInManager.IsSignedIn(User) && (User.IsInRole(SD.ProgramCoordinatorRole) || User.IsInRole(SD.FlexCoordinatorRole) || User.IsInRole(SD.GraduateCoordinatorRole)))
+    {
+        <div class="flex justify-end mb-2">
+            <p class="max-w-sm text-right text-red-600 text-sm border border-red-600 rounded-xl m-0 p-3">
+                This schedule has <strong>Unassigned Sections</strong>. All sections must be assigned in the
+                <a class="text-primary hover:text-neutral-700 underline" href="/Schedule/Builder/@Model.SemesterInstance.Id">Schedule Builder</a>
+                before this schedule can be submitted for approval.
+            </p>
+        </div>
+    }
+
+    <table id="dataTable" class="relative">
+        <thead class="table-header-group">
+            <tr>
+                <th class="bg-neutral-100/75 pb-0 mb-0">Course</th>
+                <th class="bg-neutral-100/75 pb-0 mb-0">Credit Hours</th>
+                <th class="bg-neutral-100/75 pb-0 mb-0">Part-of-term</th>
+                <th class="bg-neutral-100/75 pb-0 mb-0">Modality</th>
+                <th class="bg-neutral-100/75 pb-0 mb-0">Campus</th>
+                <th class="bg-neutral-100/75 pb-0 mb-0">Classroom</th>
+                <th class="bg-neutral-100/75 pb-0 mb-0">Days</th>
+                <th class="bg-neutral-100/75 pb-0 mb-0">Time</th>
+                <th class="bg-neutral-100/75 pb-0 mb-0">Instructor</th>
+                <th class="bg-neutral-100/75 pb-0 mb-0">Pay Models</th>
+                <th class="bg-neutral-100/75 pb-0 mb-0">Paid Credits</th>
+                <th class="bg-neutral-100/75 pb-0 mb-0">Banner CRN</th>
+                <th class="bg-neutral-100/75 pb-0 mb-0">Enrollment</th>
+                <th class="bg-neutral-100/75 pb-0 mb-0">Status</th>
+                <th class="bg-neutral-100/75 pb-0 mb-0">Notes</th>
+            </tr>
+        </thead>
+        <tfoot class="table-header-group pt-0 mt-0">
+            <tr>
+                <th class="bg-neutral-100/75 pt-0 mt-0">Course</th>
+                <th class="bg-neutral-100/75 pt-0 mt-0">Credit Hours</th>
+                <th class="bg-neutral-100/75 pt-0 mt-0">Part-of-term</th>
+                <th class="bg-neutral-100/75 pt-0 mt-0">Modality</th>
+                <th class="bg-neutral-100/75 pt-0 mt-0">Campus</th>
+                <th class="bg-neutral-100/75 pt-0 mt-0">Classroom</th>
+                <th class="bg-neutral-100/75 pt-0 mt-0">Days</th>
+                <th class="bg-neutral-100/75 pt-0 mt-0">Time</th>
+                <th class="bg-neutral-100/75 pt-0 mt-0">Instructor</th>
+                <th class="bg-neutral-100/75 pt-0 mt-0">
+                    <div class="grid grid-cols-3 gap-2">
+                        <span>Model</span>
+                        <span>Funding</span>
+                        <span>Credits</span>
+                    </div>
+                </th>
+                <th class="bg-neutral-100/75 pt-0 mt-0"></th>
+                <th class="bg-neutral-100/75 pt-0 mt-0"></th>
+                <th class="bg-neutral-100/75 pt-0 mt-0">
+                    <div class="grid grid-cols-4 gap-2">
+                        <span>Max</span>
+                        <span>Current</span>
+                        <span>Waitlist</span>
+                        <span>Final</span>
+                    </div>
+                </th>
+                <th class="bg-neutral-100/75 pt-0 mt-0"></th>
+                <th class="bg-neutral-100/75 pt-0 mt-0"></th>
+            </tr>
+        </tfoot>
+        <tbody>
+            @foreach (var courseSection in Model.Sections)
+            {
+                <tr>
+                    <td>@courseSection.Course?.CourseNumber</td>
+                    <td>@courseSection.Course?.CreditHours</td>
+                    <td>@courseSection.PartOfTerm?.PartOfTermTitle</td>
+                    <td>@courseSection.Modality?.ModalityName</td>
+                    <td>
+                        @if (courseSection.ClassroomId != null)
+                        {
+                            <text>@courseSection.Classroom?.Building?.Campus?.CampusName</text>
+                        }
+                    </td>
+                    <td>
+                        @if (courseSection.ClassroomId != null)
+                        {
+                            <text>@courseSection.Classroom?.Building?.Name, Room @courseSection.Classroom?.ClassroomNumber</text>
+                        }
+                    </td>
+                    <td>
+                        @if (courseSection.DaysOfWeek != string.Empty)
+                        {
+                            <text>@courseSection.DaysOfWeek</text>
+                        }
+                    </td>
+                    <td>
+                        @if (courseSection.SectionTime != null)
+						{
+							<text>@courseSection.SectionTime.DisplayText</text>
+						}
+                    </td>
+                    <td>@courseSection.Instructor?.ApplicationUser?.FirstName @courseSection.Instructor?.ApplicationUser?.LastName</td>
+                    <td>
+						@foreach (var sectionPay in courseSection.SectionPays ?? new List<SectionPay>())
+						{
+							<div class="w-64 grid grid-cols-3 gap-2">
+								<span>@sectionPay.PayModel?.PayModelTitle</span>
+								<span>@sectionPay.PayOrg?.PayOrgTitle</span>
+								<span>@sectionPay.CreditHours</span>
+							</div>
+						}
+                    </td>
+                    <td>@courseSection.SectionPays?.Select(s => s.CreditHours).Sum()</td>
+                    <td>
+                        @* The schedule has been approved or posted and the logged-in user is a Secretary *@
+                        @if (Model.SemesterInstance.SemesterInstanceStatusId >= 3 && SignInManager.IsSignedIn(User) && User.IsInRole(SD.SecretaryRole))
+                        {
+                            @* NOTE: The input needs to be on the same line as the div otherwise the search wont work. Its looking based off of the text in this block, which is hidden.*@
+                            <div class="hidden">@(courseSection.BannerCRN > 0 ? courseSection.BannerCRN : "")</div>
+                            <input type="text" value="@(courseSection.BannerCRN > 0 ? courseSection.BannerCRN : "")" class="w-20 editable-field" data-section-id="@courseSection.Id" data-field="BannerCRN" />
+                        }
+                        else
+                        {
+                            @(courseSection.BannerCRN > 0 ? courseSection.BannerCRN : "")
+                        }
+
+                    </td>
+                    <td>
+                        @* The schedule has been approved or posted and the logged-in user is a Secretary *@
+                        @if (Model.SemesterInstance.SemesterInstanceStatusId >= 3 && SignInManager.IsSignedIn(User) && User.IsInRole(SD.SecretaryRole))
+                        {
+                            @* SAME HERE - The input needs to be on the same line as the div otherwise the search wont work. Its looking based off of the text in this block, which is hidden. *@
+                            <div class="hidden">@courseSection.MaxEnrollment @courseSection.CurrentEnrollment @courseSection.Waitlist @courseSection.FinalEnrollment</div>
+                            <div class="w-40 grid grid-cols-3 items-center gap-2">
+                                <span>@courseSection.MaxEnrollment</span>
+                                <span><input type="text" value="@courseSection.CurrentEnrollment" class="w-12 editable-field" data-section-id="@courseSection.Id" data-field="currentEnrollment" /></span>
+                                <span><input type="text" value="@courseSection.Waitlist" class="w-12 editable-field" data-section-id="@courseSection.Id" data-field="waitlist" /></span>
+                                <span><input type="text" value="@courseSection.FinalEnrollment" class="w-12 editable-field" data-section-id="@courseSection.Id" data-field="FinalEnrollment" /></span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="w-56 grid grid-cols-4 gap-2">
+                                <span>@courseSection.MaxEnrollment</span>
+                                <span>@courseSection.CurrentEnrollment</span>
+                                <span>@courseSection.Waitlist</span>
+                                <span>@courseSection.FinalEnrollment</span>
+                            </div>
+                        }
+                    </td>
+                    <td>
+                        <span class="text-xs text-@(courseSection.SectionStatus?.SectionStatusColor)-500 bg-@(courseSection.SectionStatus?.SectionStatusColor)-100 border border-@(courseSection.SectionStatus?.SectionStatusColor)-200 rounded-full px-2 py-1">
+                            @courseSection.SectionStatus?.SectionStatusName
+                        </span>
+                    </td>
+                    <td>
+                        <div class="w-80 whitespace-pre-line">@courseSection.SectionNotes</div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="~/js/dataTables.tailwindcss.js"></script>
+<script>
+    $('#dataTable').dataTable({
+        'dom':
+            "<'grid grid-cols-1'" +
+            "<'self-center place-self-end'f>" +
+            "<'my-2 col-span-2 border border-neutral-200 rounded-lg min-w-full bg-white dark:bg-neutral-800 dark:border-neutral-700 overflow-x-auto'tr>" +
+            ">" +
+            "<'grid grid-cols-1 md:grid-cols-3'" +
+            "<'self-center'l>" +
+            "<'self-center'i>" +
+            "<'self-center place-self-end'p>" +
+            ">",
+        'fixedHeader': true,
+        'paging': false,
+        'initComplete': function () {
+            this.api()
+                .columns()
+                .every(function () {
+                    let column = this;
+                    let headerText = column.header().innerText;
+
+                    // Don't make a dropdown filter for Pay Models, Paid Credits, Banner CRN, Enrollment, or Notes
+                    if (headerText !== 'Pay Models' && headerText !== 'Paid Credits' && headerText !== 'Banner CRN' && headerText !== 'Enrollment' && headerText !== 'Notes') {
+                        // Create select element
+                        let select = document.createElement('select');
+                        select.add(new Option(''));
+                        column.footer().replaceChildren(select);
+
+                        // Apply listener for user change in value
+                        select.addEventListener('change', function () {
+                            var val = DataTable.util.escapeRegex(select.value);
+                            console.log("Val: " + val);
+                            column
+                                // Requires an exact match (cannot contain HTML)
+                                //.search(val ? '^' + val + '$' : '', true, false)
+                                .search(val ? val : '', true, false)
+                                .draw();
+                        });
+                        // Add list of options
+                        column
+                            .data()
+                            .unique()
+                            .sort()
+                            .each(function (d, j) {
+                                // Parse HTML out of the options
+                                let div = document.createElement('div');
+                                div.innerHTML = d;
+                                let text = div.innerText;
+
+                                // Don't add an option for empty values
+                                text !== "" && select.add(new Option(text.replace(/&amp;/g, '&')));
+                            });
+                    }
+                });
+        }
+    });
+
+
+    // Editable fields
+    document.querySelectorAll('.editable-field').forEach(field => {
+        field.addEventListener('blur', function (event) {
+            const sectionId = this.getAttribute('data-section-id');
+            const fieldName = this.getAttribute('data-field');
+            const value = this.value;
+            updateField(sectionId, fieldName, value);
+        });
+    });
+
+    // AJAX call to server with the updated value
+    function updateField(sectionId, fieldName, value) {
+        // AJAX call to server with the updated value
+        fetch('/Schedule/Preview?handler=updateField', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+            },
+            body: JSON.stringify({ sectionId, fieldName, value })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
+</script>

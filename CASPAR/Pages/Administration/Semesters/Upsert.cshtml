@@ -1,0 +1,65 @@
+﻿@page
+@model CASPAR.Pages.Administration.Semesters.UpsertModel
+@{
+    Layout = "_LayoutAdministration";
+    ViewData["Title"] = $"{(Model.SemesterInstance.Id == 0 ? "Create" : "Edit")} Semester";
+}
+
+<h1>@(Model.SemesterInstance.Id == 0 ? "Create" : "Edit") Semester</h1>
+
+<form method="post" class="form">
+    <fieldset class="form-fields">
+        <div class="form-group">
+            <label asp-for="SemesterInstance.Name"></label>
+            <input asp-for="SemesterInstance.Name" />
+            <span asp-validation-for="SemesterInstance.Name" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="SemesterInstance.Semester"></label>
+            <div class="flex flex-row gap-3 justify-between">
+                @foreach (var type in Model.SemesterTypes)
+                {
+                    <label class="flex flex-row items-center gap-1">
+                        @Html.RadioButtonFor(t =>
+                            t.SemesterInstance.SemesterId,
+                            type.Id,
+                            new { @class = "radio" }
+                        )
+                        <span>@type.SemesterName</span>
+                    </label>
+                }
+            </div>
+            <span asp-validation-for="SemesterInstance.Semester" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="SemesterInstance.SemesterStartDate"></label>
+            <input asp-for="SemesterInstance.SemesterStartDate" type="date" />
+            <span asp-validation-for="SemesterInstance.SemesterStartDate" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="SemesterInstance.SemesterEndDate"></label>
+            <input asp-for="SemesterInstance.SemesterEndDate" type="date" />
+            <span asp-validation-for="SemesterInstance.SemesterEndDate" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="SemesterInstance.SemesterRegistrationStart"></label>
+            <input asp-for="SemesterInstance.SemesterRegistrationStart" type="date" />
+            <span asp-validation-for="SemesterInstance.SemesterRegistrationStart" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="SemesterInstance.SemesterRegistrationEnd"></label>
+            <input asp-for="SemesterInstance.SemesterRegistrationEnd" type="date" />
+            <span asp-validation-for="SemesterInstance.SemesterRegistrationEnd" class="text-sm text-red-600"></span>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        @if (Model.SemesterInstance.Id != 0)
+        {
+            <input asp-for="SemesterInstance.Id" type="hidden" />
+        }
+        <input asp-for="SemesterInstance.SemesterInstanceStatusId" type="hidden" />
+        <a asp-area="" asp-page="Index" class="btn">Cancel</a>
+        <button type="submit" class="btn btn-success icon-check">Save</button>
+    </div>
+</form>

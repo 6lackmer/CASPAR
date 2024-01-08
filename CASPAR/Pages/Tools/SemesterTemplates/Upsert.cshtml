@@ -1,0 +1,81 @@
+﻿@page
+@model CASPAR.Pages.Tools.SemesterTemplates.UpsertModel
+@{
+    Layout = "_LayoutTools";
+    ViewData["Title"] = "Add Course";
+}
+
+<h1>Add Course To Template</h1>
+
+<form method="post" class="form">
+    <div class="row">
+        <div class="col-md-8">
+        @if (Model.Course.Id == 0)
+        {
+            <div class="form-group">
+                <label class="ms-2">Course</label>
+                @Html.DropDownListFor(t =>
+            t.Course.CourseId,
+            Model.Courses,
+            "",
+            new { @class = "" }
+            )
+                <span asp-validation-for="Course.CourseId" class="text-sm text-red-600"></span>
+            </div>
+        }
+        else
+        {
+            <div class="form-group">
+                <label class="ms-2">Course</label>
+                <h4 readonly>@Model.Course.Course.Program.ProgramCode @Model.Course.Course.CourseNumber</h4>
+            </div>
+            <input asp-for="Course.CourseId" type="hidden"/>
+            <input asp-for="Course.Id" type="hidden" />
+        }
+        </div>
+        <div class="col-md-4">
+            @if (!(TempData["Error"] == null))
+            {
+
+                <h5 style="color: red; text-align: center;">@(TempData["Error"].ToString())</h5>
+            }
+        </div>
+    </div>
+    <fieldset class="form-fields">
+        <div class="form-group">
+            <label asp-for="Course.TotalCount"></label>
+            <input asp-for="Course.TotalCount" />
+            <span asp-validation-for="Course.TotalCount" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Course.FaceToFaceCount"></label>
+            <input asp-for="Course.FaceToFaceCount" />
+            <span asp-validation-for="Course.FaceToFaceCount" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Course.OnlineCount"></label>
+            <input asp-for="Course.OnlineCount" />
+            <span asp-validation-for="Course.OnlineCount" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Course.FlexCount"></label>
+            <input asp-for="Course.FlexCount" />
+            <span asp-validation-for="Course.FlexCount" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Course.VirtualCount"></label>
+            <input asp-for="Course.VirtualCount" />
+            <span asp-validation-for="Course.VirtualCount" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Course.HybridCount"></label>
+            <input asp-for="Course.HybridCount" />
+            <span asp-validation-for="Course.HybridCount" class="text-sm text-red-600"></span>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        <a asp-area="" asp-page="Index" class="btn">Cancel</a>
+        <button type="submit" class="btn btn-success icon-check" asp-route-templateId="@Model.Course.TemplateId" asp-route-courseId ="@Model.Course.CourseId">Save</button>
+    </div>
+</form>

@@ -1,0 +1,140 @@
+﻿@using Infrastructure.Models;
+
+@namespace CASPAR.Pages.Schedule.Builder
+
+<div class="flex-grow grid grid-cols-3 md:grid-cols-5 2xl:course-full gap-1 ml-3 text-sm">
+    <div class="form-group">
+        <span class="text-neutral-500">Instructor</span>
+        @if (Section.Instructor == null)
+        {
+            <span class="font-bold text-red-600">Unassigned</span>
+        }
+        else
+        {
+            <button class="text-left font-bold text-neutral-800" @onclick=@(e => OnSelectInstructor.InvokeAsync(Section.InstructorId))>
+                @Section.Instructor?.ApplicationUser?.FirstName @Section.Instructor?.ApplicationUser?.LastName
+            </button>
+        }
+    </div>
+    <div class="form-group">
+        <span class="text-neutral-500">Seats</span>
+        @if (Section.MaxEnrollment == 0)
+        {
+            <span class="font-bold text-red-600">Unassigned</span>
+        }
+        else
+        {
+            <span class="font-bold text-neutral-800">@Section.MaxEnrollment</span>
+        }
+    </div>
+    <div class="form-group">
+        <span class="text-neutral-500">Part-of-term</span>
+        @if (Section.PartOfTerm == null)
+        {
+            <span class="font-bold text-red-600">Unassigned</span>
+        }
+        else
+        {
+            <span class="font-bold text-neutral-800">@Section.PartOfTerm?.PartOfTermTitle</span>
+        }
+    </div>
+    <div class="form-group">
+        <span class="text-neutral-500">Modality</span>
+        @if (Section.Modality == null)
+        {
+            <span class="font-bold text-red-600">Unassigned</span>
+        }
+        else
+        {
+            <span class="font-bold text-neutral-800">@Section.Modality?.ModalityName</span>
+        }
+    </div>
+    <div class="form-group">
+        <span class="text-neutral-500">Campus</span>
+        @if (Section.Modality != null && Section.Modality.HasCampuses)
+        {
+            if (Section.Classroom == null)
+            {
+                <span class="font-bold text-red-600">Unassigned</span>
+            }
+            else
+            {
+                <span class="font-bold text-neutral-800">@Section.Classroom?.Building?.Campus?.CampusName</span>
+            }
+        }
+        else
+        {
+            <span class="font-bold text-neutral-800">--</span>
+        }
+    </div>
+    <div class="form-group">
+        <span class="text-neutral-500">Days</span>
+        @if (Section.Modality != null && Section.Modality.HasTimeBlocks)
+        {
+            if (Section.DaysOfWeek == string.Empty)
+            {
+                <span class="font-bold text-red-600">Unassigned</span>
+            }
+            else
+            {
+                <span class="font-bold text-neutral-800">@Section.DaysOfWeek</span>
+            }
+        }
+        else
+        {
+            <span class="font-bold text-neutral-800">--</span>
+        }
+    </div>
+    <div class="form-group col-span-1 md:col-span-2 2xl:col-span-1">
+        <span class="text-neutral-600">Times</span>
+        @if (Section.Modality != null && Section.Modality.HasTimeBlocks)
+        {
+            if (Section.SectionTime == null)
+            {
+                <span class="font-bold text-red-600">Unassigned</span>
+            }
+            else
+            {
+                <span class="font-bold text-neutral-800">
+                    @Section.SectionTime.DisplayText
+                </span>
+            }
+        }
+        else
+        {
+            <span class="font-bold text-neutral-800">--</span>
+        }
+    </div>
+    <div class="form-group">
+        <span class="text-neutral-500">Pay model</span>
+        @if (Section.SectionPays == null || Section.SectionPays.Count == 0)
+        {
+            <span class="font-bold text-red-600">Unassigned</span>
+        }
+        else
+        {
+            <span class="font-bold text-neutral-800">@(Section.SectionPays?.Count > 1 ? "Multiple" : Section.SectionPays?.FirstOrDefault()?.PayModel?.PayModelTitle)</span>
+        }
+    </div>
+    <div class="form-group">
+        <span class="text-neutral-500">Funding</span>
+        @if (Section.SectionPays == null || Section.SectionPays.Count == 0)
+        {
+            <span class="font-bold text-red-600">Unassigned</span>
+        }
+        else
+        {
+            <span class="font-bold text-neutral-800">@(Section.SectionPays?.Count > 1 ? "Multiple" : Section.SectionPays?.FirstOrDefault()?.PayOrg?.PayOrgTitle)</span>
+        }
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public Section Section { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<int?> OnSelectInstructor { get; set; }
+
+}

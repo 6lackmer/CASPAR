@@ -1,0 +1,38 @@
+﻿@page
+@model CASPAR.Pages.Instructor.Profile.IndexModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<h1>My Profile</h1>
+
+
+<fieldset class="form-fields">
+    <div class="form-group">
+        <label asp-for="Instructor.ApplicationUser.FirstName"></label>
+        <input disabled asp-for="Instructor.ApplicationUser.FirstName" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Instructor.InstructorTitle"></label>
+        <input disabled asp-for="Instructor.InstructorTitle" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Instructor.ApplicationUser.LastName"></label>
+        <input disabled asp-for="Instructor.ApplicationUser.LastName" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Instructor.ApplicationUser.Email"></label>
+        <input disabled asp-for="Instructor.ApplicationUser.Email" />
+    </div>
+    <div class="form-group">
+        <label>Program Affiliation</label>
+        @foreach (var p in Model.Instructor.ProgramAffiliation)
+        {
+            <input disabled asp-for=@p.ProgramName/>
+        }
+    </div>
+</fieldset>
+
+<div class="form-actions">
+    <a asp-area="" asp-page="Update" class="btn">Modify</a>
+</div>

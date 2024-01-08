@@ -1,0 +1,75 @@
+﻿@using CASPAR.ViewModels;
+@using DataAccess;
+@using Infrastructure.Interfaces;
+@using Infrastructure.Models;
+@using Microsoft.EntityFrameworkCore;
+
+@namespace CASPAR.Pages.Schedule.Builder
+
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+
+<div class="hidden lg:block relative">
+    <div class="sticky top-0">
+        <div class="h-screen w-64 pt-6 pb-4">
+            @if (SelectedCourseId != null)
+            {
+                <div class="h-full overflow-y-auto overscroll-contain text-sm bg-neutral-200 rounded-xl p-4">
+                    <h2 class="mb-8">@SelectedCourse?.Program?.ProgramCode @SelectedCourse?.CourseNumber</h2>
+
+                    <StudentRequests WishlistSummaries="WishlistSummaries" />
+
+                    <InstructorRequests
+                        SelectedCourse="SelectedCourse"
+                        Sections="Sections"
+                        InstructorSchedules="InstructorSchedules"
+                        AllInstructorWishlists="AllInstructorWishlists"
+                        RemainingInstructorWishlists="RemainingInstructorWishlists"
+                        WishlistSummaries="WishlistSummaries"
+                        OnSelectInstructor="OnSelectInstructor"
+                    />
+
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public int? SelectedCourseId { get; set; }
+
+    [Parameter]
+    public IEnumerable<Section>? Sections { get; set; }
+
+    [Parameter]
+    public IEnumerable<WishlistSummary>? WishlistSummaries { get; set; }
+
+    [Parameter]
+    public IEnumerable<InstructorSchedules> InstructorSchedules { get; set; } = new List<InstructorSchedules>();
+
+    [Parameter]
+    public IEnumerable<InstructorWishlistCourse> AllInstructorWishlists { get; set; } = new List<InstructorWishlistCourse>();
+
+    [Parameter]
+    public IEnumerable<InstructorWishlistCourse> RemainingInstructorWishlists { get; set; } = new List<InstructorWishlistCourse>();
+
+    [Parameter]
+    public EventCallback<int?> OnSelectInstructor { get; set; }
+
+    private Course? SelectedCourse { get; set; }
+
+    public bool Ready { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Ready = false;
+
+        using var context = DbFactory.CreateDbContext();
+
+        SelectedCourse = await context.Courses.Include("Program").FirstOrDefaultAsync(s => s.Id == SelectedCourseId);
+
+        Ready = true;
+    }
+
+}

@@ -1,0 +1,11 @@
+﻿@{
+    Layout = "_LayoutFullWidth";
+}
+
+<div class="p-6">
+    <main class="container mx-auto my-2">
+        @RenderBody()
+    </main>
+</div>
+
+@await RenderSectionAsync("Scripts", required: false)

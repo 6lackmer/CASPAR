@@ -1,0 +1,35 @@
+﻿@page
+@model CASPAR.Pages.Student.Profile.IndexModel
+@{
+	ViewData["Title"] = "My Profile";
+}
+
+<h1>My Profile</h1>
+
+
+<fieldset class="form-fields">
+	<div class="form-group">
+		<label asp-for="Student.User.FirstName"></label>
+		<input disabled asp-for="Student.User.FirstName" />
+	</div>
+	<div class="form-group">
+		<label asp-for="Student.Major.MajorName" class="ms-2"></label>
+		<input disabled asp-for="Student.Major.MajorName" />
+	</div>
+	<div class="form-group">
+		<label asp-for="Student.User.LastName"></label>
+		<input disabled asp-for="Student.User.LastName" />
+	</div>
+	<div class="form-group">
+		<label asp-for="Student.GraduationYear"></label>
+		<input disabled asp-for="Student.GraduationYear" />
+	</div>
+	<div class="form-group">
+		<label asp-for="Student.User.Email"></label>
+		<input disabled asp-for="Student.User.Email" />
+	</div>
+</fieldset>
+
+<div class="form-actions">
+	<a asp-area="" asp-page="Update" class="btn">Modify</a>
+</div>

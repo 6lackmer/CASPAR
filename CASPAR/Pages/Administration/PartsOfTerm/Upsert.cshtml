@@ -1,0 +1,28 @@
+﻿@page
+@model CASPAR.Pages.Admin.PartsOfTerm.UpsertModel
+@{
+    Layout = "_LayoutAdministration";
+    ViewData["Title"] = $"{(Model.PartOfTerm.Id == 0 ? "Create" : "Edit")} Part Of Term";
+}
+
+<h1>@(Model.PartOfTerm.Id == 0 ? "Create" : "Edit") Part Of Term</h1>
+
+<form method="post" class="form">
+    <fieldset class="form-fields">
+        <div class="form-group">
+            <label asp-for="PartOfTerm.PartOfTermTitle"></label>
+            <input asp-for="PartOfTerm.PartOfTermTitle" />
+            <span asp-validation-for="PartOfTerm.PartOfTermTitle" class="text-sm text-red-600"></span>
+        </div>
+
+    </fieldset>
+
+    <div class="form-actions">
+        @if (Model.PartOfTerm.Id != 0)
+        {
+                <input asp-for="PartOfTerm.Id" type="hidden" />
+        }
+        <a asp-area="" asp-page="Index" class="btn">Cancel</a>
+        <button type="submit" class="btn btn-success icon-check">Save</button>
+    </div>
+</form>

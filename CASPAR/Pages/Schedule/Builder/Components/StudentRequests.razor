@@ -1,0 +1,89 @@
+﻿@using CASPAR.ViewModels;
+
+@namespace CASPAR.Pages.Schedule.Builder
+
+@if (WishlistSummaries.Count() > 0)
+{
+    <div class="flex flex-col gap-2 mb-4">
+        <div class="flex items-center justify-between gap-4">
+            <span class="text-base font-bold">Remaining Student Requests</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                 class="w-5 h-5">
+                <path d="M15.5 2A1.5 1.5 0 0014 3.5v13a1.5 1.5 0 001.5 1.5h1a1.5 1.5 0 001.5-1.5v-13A1.5 1.5 0 0016.5 2h-1zM9.5 6A1.5 1.5 0 008 7.5v9A1.5 1.5 0 009.5 18h1a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0010.5 6h-1zM3.5 10A1.5 1.5 0 002 11.5v5A1.5 1.5 0 003.5 18h1A1.5 1.5 0 006 16.5v-5A1.5 1.5 0 004.5 10h-1z" />
+            </svg>
+        </div>
+
+        <ul class="flex flex-col gap-y-3 bg-neutral-100 rounded-lg p-2 mb-4 text-sm">
+            @foreach (var modality in WishlistSummaries.Where(t => t.Modality != null).OrderBy(t => t.Modality).Select(t => t.Modality).Distinct())
+            {
+                if (@WishlistSummaries.Where(t => t.Modality == modality).Select(t => t.Count).Sum() > 0)
+                {
+                    <li>
+                        <div class="flex justify-between font-bold text-purple-900 text-base">
+                            <span>@modality?.ModalityName</span>
+                            <span>@WishlistSummaries.Where(t => t.Modality == modality).Select(t => t.Count).Sum()</span>
+                        </div>
+                        @if (WishlistSummaries.Where(t => t.Modality == modality && t.Campus != null).Select(t => t.Campus).Distinct().Count() > 0)
+                        {
+                            <ul class="text-neutral-600 pl-4 mb-2">
+                                @foreach (var campus in WishlistSummaries.Where(t => t.Modality == modality).OrderBy(t => t.Campus).Select(t => t.Campus).Distinct())
+                                {
+                                    if (@WishlistSummaries.Where(t => t.Modality == modality && t.Campus == campus).Select(t => t.Count).Sum() > 0)
+                                    {
+                                        <li>
+                                            <div class="flex justify-between font-bold">
+                                                <span>@campus?.CampusName</span>
+                                                <span>@WishlistSummaries.Where(t => t.Modality == modality && t.Campus == campus).Select(t => t.Count).Sum()</span>
+                                            </div>
+                                            @if (WishlistSummaries.Where(t => t.Modality == modality && t.Campus == campus && t.TimeBlock != null).Select(t => t.TimeBlock).Distinct().Count() > 0)
+                                            {
+                                                <ul class="text-neutral-500 border-l-4 border-neutral-200 ml-1 pl-4">
+                                                    @foreach (var timeBlock in WishlistSummaries.Where(t => t.Modality == modality && t.Campus == campus).OrderBy(t => t.TimeBlock).Select(t => t.TimeBlock).Distinct())
+                                                    {
+                                                        if (@WishlistSummaries.Where(t => t.Modality == modality && t.Campus == campus && t.TimeBlock == timeBlock).Select(t => t.Count).Sum() > 0)
+                                                        {
+                                                            <li>
+                                                                <div class="flex justify-between">
+                                                                    <span>@timeBlock?.TimeBlockName</span>
+                                                                    <span>@WishlistSummaries.Where(t => t.Modality == modality && t.Campus == campus && t.TimeBlock == timeBlock).Select(t => t.Count).Sum()</span>
+                                                                </div>
+                                                            </li>
+                                                        }
+                                                    }
+                                                </ul>
+                                            }
+                                        </li>
+                                    }
+                                }
+
+                            </ul>
+                        }
+                        else if (WishlistSummaries.Where(t => t.Modality == modality && t.TimeBlock != null).Select(t => t.TimeBlock).Distinct().Count() > 0)
+                        {
+                            <ul class="text-neutral-600 pl-4 mb-2">
+                                @foreach (var timeBlock in WishlistSummaries.Where(t => t.Modality == modality).OrderBy(t => t.TimeBlock).Select(t => t.TimeBlock).Distinct())
+                                {
+                                    if (@WishlistSummaries.Where(t => t.Modality == modality && t.TimeBlock == timeBlock).Select(t => t.Count).Sum() > 0)
+                                    {
+                                        <li>
+                                            <div class="flex justify-between font-bold">
+                                                <span>@timeBlock?.TimeBlockName</span>
+                                                <span>@WishlistSummaries.Where(t => t.Modality == modality && t.TimeBlock == timeBlock).Select(t => t.Count).Sum()</span>
+                                            </div>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        }
+                    </li>
+                }
+            }
+        </ul>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public IEnumerable<WishlistSummary> WishlistSummaries { get; set; } = new List<WishlistSummary>();
+
+}

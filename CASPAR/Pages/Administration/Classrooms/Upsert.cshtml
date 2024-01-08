@@ -1,0 +1,47 @@
+﻿@page
+@model CASPAR.Pages.Admin.Classrooms.UpsertModel
+@{
+    Layout = "_LayoutAdministration";
+    ViewData["Title"] = $"{(Model.Classroom.Id == 0 ? "Add" : "Edit")} Classroom";
+}
+
+<h1>@(Model.Classroom.Id == 0 ? "Add" : "Edit") Classroom</h1>
+
+<form method="post" class="form">
+    <fieldset class="form-fields">
+        <div class="form-group">
+            <label class="ms-2">Building</label>
+            @Html.DropDownListFor(t =>
+            t.Classroom.BuildingId,
+            Model.Buildings,
+            "",
+            new { @class = "" }
+            )
+            <span asp-validation-for="Classroom.BuildingId" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Classroom.ClassroomNumber"></label>
+            <input asp-for="Classroom.ClassroomNumber" />
+            <span asp-validation-for="Classroom.ClassroomNumber" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Classroom.ClassroomCapacity"></label>
+            <input asp-for="Classroom.ClassroomCapacity" />
+            <span asp-validation-for="Classroom.ClassroomCapacity" class="text-sm text-red-600"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Classroom.ClassroomDetail"></label>
+            <textarea asp-for="Classroom.ClassroomDetail"></textarea>
+            <span asp-validation-for="Classroom.ClassroomDetail" class="text-sm text-red-600"></span>
+        </div>
+    </fieldset>
+
+    <div class="form-actions">
+        @if (Model.Classroom.Id != 0)
+        {
+            <input asp-for="Classroom.Id" type="hidden" />
+        }
+        <a asp-area="" asp-page="Index" class="btn">Cancel</a>
+        <button type="submit" class="btn btn-success icon-check">Save</button>
+    </div>
+</form>
